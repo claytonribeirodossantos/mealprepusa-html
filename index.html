@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Meal Prep USA – Sistema de Marmitas</title>
+
+  <!-- Chart.js para gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Supabase client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --green-main: #567730;
+      --orange-main: #f7941d;
+      --bg-light: #f7faf5;
+      --gray-50:#f9fafb;
+      --gray-100:#f3f4f6;
+      --gray-200:#e5e7eb;
+      --gray-500:#6b7280;
+      --gray-700:#374151;
+      --shadow-soft: 0 2px 10px rgba(0,0,0,0.06);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      background: var(--bg-light);
+      color: #222;
+    }
+
+    header {
+      background: #ffffff;
+      color: var(--green-main);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid var(--orange-main);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-left img.logo {
+      height: 56px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    header small {
+      opacity: 0.85;
+      color: #666;
+    }
+
+    #app {
+      display: flex;
+      min-height: calc(100vh - 70px);
+    }
+
+    nav {
+      width: 230px;
+      background: var(--green-main);
+      color: #f0fff4;
+      padding: 16px 0;
+    }
+
+    nav h2 {
+      font-size: 14px;
+      margin: 0 16px 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #d1fae5;
+    }
+
+    nav button {
+      display: block;
+      width: 100%;
+      padding: 10px 18px;
+      border: none;
+      background: transparent;
+      color: #e6fffa;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    nav button:hover {
+      background: #445823;
+    }
+
+    nav button.active {
+      background: var(--orange-main);
+      color: #1a202c;
+      font-weight: 600;
+    }
+
+    main {
+      flex: 1;
+      padding: 20px 24px 40px;
+      overflow-y: auto;
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--green-main);
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 16px;
+      border-top: 3px solid rgba(86,119,48,0.12);
+    }
+
+    .section-title{
+      display:flex; align-items:center; justify-content:space-between;
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      color: var(--green-main);
+      font-weight: 700;
+    }
+
+    .divider{
+      height:1px; background: var(--gray-200);
+      margin: 12px 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px 16px;
+      margin-bottom: 12px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-orders {
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap:16px;
+    }
+    @media (max-width: 980px){
+      .grid-orders{ grid-template-columns: 1fr; }
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+      color: #4a5568;
+      gap:4px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      padding: 8px 10px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e0;
+      outline: none;
+      background: #fdfdfd;
+      transition: 120ms ease;
+    }
+
+    textarea {
+      min-height: 40px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--orange-main);
+      box-shadow: 0 0 0 2px rgba(247,148,29,0.25);
+      background: #fff;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 14px;
+      font-size: 14px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      margin-right: 8px;
+      margin-top: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      transition: 120ms ease;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+
+    .btn-primary {
+      background: var(--orange-main);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: var(--green-main);
+      color: #fff;
+    }
+
+    .btn-ghost {
+      background: #fff;
+      color: var(--green-main);
+      border: 1px solid var(--green-main);
+      box-shadow: none;
+    }
+
+    .btn-danger {
+      background: #e53e3e;
+      color: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e2e8f0;
+      padding: 8px 8px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f7fafc;
+      font-weight: 700;
+      color: #2d3748;
+      font-size: 12.5px;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+
+    tbody tr:hover {
+      background: #f0fff4;
+    }
+
+    .muted {
+      color: #718096;
+      font-size: 12px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      color: #fff;
+    }
+
+    .pill-status {
+      background: var(--green-main);
+    }
+
+    .flex-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    .stat-card {
+      background: #fefcf7;
+      border-radius: 12px;
+      padding: 12px 14px;
+      border: 1px solid #f6e3c5;
+    }
+
+    .stat-card h4 {
+      margin: 0 0 6px 0;
+      font-size: 12px;
+      color: #744210;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+
+    .stat-card strong { font-size: 18px; }
+
+    .resumo-cards .stat-card {
+      background: #f7faf5;
+      border-color: var(--green-main);
+    }
+    .resumo-cards .stat-card h4 { color: var(--green-main); }
+    .resumo-cards .stat-card strong { color: var(--orange-main); }
+
+    .totais-produto-card {
+      background: #f7faf5;
+      border-color: var(--green-main);
+    }
+
+    .totais-produto-card h4 {
+      color: var(--green-main);
+      margin: 0 0 6px 0;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(86,119,48,0.3);
+      font-size: 16px;
+    }
+
+    .totais-produto-card .linha-sem-obs,
+    .totais-produto-card .linha-obs {
+      color: var(--green-main);
+      font-weight: 400;
+      font-size: 14px;
+      margin-top: 4px;
+      margin-left: 0;
+    }
+
+    .totais-produto-card .totais-total {
+      margin-top: 8px;
+      font-weight: 600;
+      color: var(--orange-main);
+      font-size: 13px;
+    }
+
+    .mt-8 { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+    .mt-16 { margin-top: 16px; }
+
+    /* Itens do pedido */
+    .item-add-grid{
+      display:grid;
+      grid-template-columns: 1.2fr 0.35fr 1fr auto;
+      gap:10px;
+      align-items:end;
+    }
+    @media (max-width: 780px){
+      .item-add-grid{
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .items-table td input.item-qty{
+      width:70px;
+      padding:5px 6px;
+    }
+
+    .total-box{
+      background: var(--gray-50);
+      border:1px dashed var(--gray-200);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .total-row{
+      display:flex; justify-content:space-between; align-items:center;
+      font-size: 14px; padding: 4px 0;
+    }
+    .total-row strong{ color: var(--gray-700); }
+    .total-row.total-final{
+      font-size: 16px; font-weight: 800; color: var(--green-main);
+      border-top:1px solid var(--gray-200); margin-top:6px; padding-top:8px;
+    }
+
+    canvas { max-width: 100%; }
+
+    @media print {
+      header, nav, .btn, .no-print {
+        display: none !important;
+      }
+      body { background: #ffffff !important; }
+      main { padding: 0 !important; }
+      .card {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        border: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <img src="mealprepusa-logo.jpg"
+         alt="Meal Prep USA"
+         class="logo"
+         onerror="this.onerror=null; this.src='mealprepusa-logo.png';">
+    <div>
+      <h1>Meal Prep USA – Sistema de Marmitas</h1>
+      <small>Uso local+cloud • Sincroniza com Supabase • Valores em USD</small>
+    </div>
+  </div>
+  <div class="muted">
+    Versão 5.0 • Supabase+Netlify • Off-line seguro
+  </div>
+</header>
+
+<div id="app">
+  <nav>
+    <h2>Menu</h2>
+    <button data-view="dashboard" class="active">Dashboard</button>
+    <button data-view="clientes">Clientes</button>
+    <button data-view="cardapio">Cardápio</button>
+    <button data-view="pedidos">Pedidos</button>
+    <button data-view="producao">Produção do dia</button>
+    <button data-view="entregas">Entregas do dia</button>
+    <button data-view="financeiro">Financeiro</button>
+  </nav>
+
+  <main id="view-container"></main>
+</div>
+
+<script>
+  // ====== SUPABASE CONFIG ======
+  const SUPABASE_URL = "https://dbmzcqusygysoljrduvp.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRibXpjcXVzeWd5c29sanJkdXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5OTkzNzYsImV4cCI6MjA3OTU3NTM3Nn0.i2h1PvxlGRuNNfl6fj_scL630AR3kTW4Gd26L0Z-rfg";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const STORAGE_KEY = 'mealprepusa_marmitas_v2_5';
+  const APP_VERSION = '5.0';
+
+  let state = {
+    version: APP_VERSION,
+    clients: [],
+    products: [],
+    orders: []
+  };
+
+  // filtro global da tela de pedidos (não quebra ao re-render)
+  let pedidosFiltroModo = 'hoje'; // hoje | data | todos
+  let pedidosFiltroData = null;
+
+  let editingClientId = null;
+  let editingOrderId = null;
+  let editingProductId = null;
+
+  let dashboardStatusChart = null;
+  let dashboardProductsChart = null;
+  let financeLineChart = null;
+
+  // ====== BASIC SYNC LAYER (offline-first) ======
+  let isSyncing = false;
+
+  function generateId() {
+    return Date.now().toString() + Math.floor(Math.random() * 1000).toString();
+  }
+
+  function migrateState(rawState) {
+    const s = rawState && typeof rawState === 'object' ? rawState : {};
+    if (!Array.isArray(s.clients)) s.clients = [];
+    if (!Array.isArray(s.products)) s.products = [];
+    if (!Array.isArray(s.orders)) s.orders = [];
+
+    s.clients = s.clients.map(c => ({
+      id: c.id || generateId(),
+      name: c.name || '',
+      phone: c.phone || '',
+      address: c.address || '',
+      district: c.district || '',
+      notes: c.notes || ''
+    }));
+
+    s.products = s.products.map(p => ({
+      id: p.id || generateId(),
+      name: p.name || '',
+      mealType: p.mealType || '',
+      category: p.category || '',
+      price: Number(p.price) || 0,
+      active: (typeof p.active === 'boolean') ? p.active : true
+    }));
+
+    s.orders = s.orders.map(o => ({
+      id: o.id || generateId(),
+      date: o.date || getTodayISO(),
+      clientId: o.clientId || '',
+      status: o.status || 'A produzir', // (sem UI; usado em produção/entregas)
+      paymentMethod: o.paymentMethod || '',
+      items: Array.isArray(o.items) ? o.items.map(it => ({
+        productId: it.productId || '',
+        quantity: Number(it.quantity) || 0,
+        unitPrice: Number(it.unitPrice) || 0,
+        lineTotal: Number(it.lineTotal) || 0,
+        itemNote: it.itemNote || ''
+      })) : [],
+      shippingFee: Number(o.shippingFee) || 0,
+      discountValue: Number(o.discountValue) || 0,
+      totalValue: Number(o.totalValue) || 0
+    }));
+
+    s.version = APP_VERSION;
+    return s;
+  }
+
+  function loadStateLocal() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        state = migrateState(parsed);
+      } else {
+        state = migrateState(state);
+      }
+    } catch (e) {
+      console.error('Erro ao carregar local:', e);
+      state = migrateState(state);
+    }
+  }
+
+  function saveStateLocal() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.error('Erro ao salvar local:', e);
+      alert('Erro ao salvar dados no navegador.');
+    }
+  }
+
+  async function loadStateFromSupabase() {
+    try {
+      const [{ data: clients, error: ec },
+             { data: products, error: ep },
+             { data: orders, error: eo }] = await Promise.all([
+        supabase.from('clients').select('*'),
+        supabase.from('products').select('*'),
+        supabase.from('orders').select('*')
+      ]);
+      if (ec || ep || eo) {
+        console.warn('Erro Supabase load:', ec||ep||eo);
+        return false;
+      }
+      state.clients = (clients || []).map(c => ({
+        id: c.id, name: c.name||'', phone: c.phone||'',
+        address: c.address||'', district: c.district||'', notes: c.notes||''
+      }));
+      state.products = (products || []).map(p => ({
+        id: p.id, name: p.name||'', mealType: p.mealType||'',
+        category: p.category||'', price: Number(p.price)||0,
+        active: (typeof p.active === 'boolean') ? p.active : true
+      }));
+      state.orders = (orders || []).map(o => ({
+        id: o.id,
+        date: (o.date||getTodayISO()).slice(0,10),
+        clientId: o.clientId||'',
+        paymentMethod: o.paymentMethod||'',
+        items: Array.isArray(o.items) ? o.items : [],
+        shippingFee: Number(o.shippingFee)||0,
+        discountValue: Number(o.discountValue)||0,
+        totalValue: Number(o.totalValue)||0,
+        status: o.status||'A produzir',
+      }));
+      state.version = APP_VERSION;
+      saveStateLocal();
+      return true;
+    } catch (e) {
+      console.warn('Supabase offline?', e);
+      return false;
+    }
+  }
+
+  async function saveStateToSupabase() {
+    if (isSyncing) return;
+    isSyncing = true;
+    try {
+      // upsert all tables (id as PK)
+      const p1 = supabase.from('clients').upsert(state.clients, { onConflict: 'id' });
+      const p2 = supabase.from('products').upsert(state.products, { onConflict: 'id' });
+      const p3 = supabase.from('orders').upsert(state.orders, { onConflict: 'id' });
+      const [r1,r2,r3] = await Promise.all([p1,p2,p3]);
+      if (r1.error || r2.error || r3.error) {
+        console.warn('Erro Supabase save:', r1.error||r2.error||r3.error);
+      }
+    } catch (e) {
+      console.warn('Supabase save falhou (offline)', e);
+    } finally {
+      isSyncing = false;
+    }
+  }
+
+  function saveState() {
+    saveStateLocal();
+    // tenta sincronizar sem travar a UI
+    saveStateToSupabase();
+  }
+
+  function formatCurrency(value) {
+    const n = Number(value) || 0;
+    return n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  }
+
+  function getTodayISO() {
+    const now = new Date();
+    const localMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return localMidnight.toISOString().slice(0, 10);
+  }
+
+  function addDaysISO(dateISO, days) {
+    const d = new Date(dateISO + 'T00:00:00');
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function findClientById(id) {
+    return state.clients.find(c => c.id === id);
+  }
+
+  function findProductById(id) {
+    return state.products.find(p => p.id === id);
+  }
+
+  function productLabel(p) {
+    if (!p) return 'Produto removido';
+    return p.name + (p.mealType ? ' – ' + p.mealType : '');
+  }
+
+  function exportState() {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mealprepusa-backup-${getTodayISO()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importState(file) {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const imported = JSON.parse(reader.result);
+        const migrated = migrateState(imported);
+        state = migrated;
+        seedClientsIfMissing();
+        saveState();
+        renderView('dashboard');
+        alert('Backup importado com sucesso!');
+      } catch (e) {
+        console.error(e);
+        alert('Erro ao importar. Arquivo inválido.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function seedClientsIfMissing(){
+    const seeds = [
+      { id:"seed-celeste", name:"Celeste", address:"3720 Albemarle St NW, DC", district:"DC", phone:"", notes:"Cliente 9 marmitas semanais."},
+      { id:"seed-rodrigo", name:"Rodrigo", address:"1600 N Oak St, Arlington, VA", district:"Arlington, VA", phone:"", notes:"Cliente 16 marmitas semanais."},
+      { id:"seed-carla", name:"Carla", address:"513 Goodland Place, Rockville", district:"Rockville, MD", phone:"", notes:"🚨 Sem limão, sem azeite, sem tempero. Apenas sal. 📌 Legumes: abobrinha, cenoura, batata doce, batata, berinjela, repolho roxo, repolho verde."},
+      { id:"seed-bernardo", name:"Bernardo", address:"10454 Parthenon, Bethesda", district:"Bethesda, MD", phone:"", notes:"Cliente 7 marmitas semanais."},
+      { id:"seed-gabriela", name:"Gabriela", address:"Ashburn, VA", district:"Ashburn, VA", phone:"", notes:"Total semanal FREE (cortesia)."},
+      { id:"seed-lili", name:"Lili", address:"102 Westwick Ct, Unit 2, Sterling", district:"Sterling, VA", phone:"", notes:"Cliente 7 marmitas semanais."},
+      { id:"seed-henrique", name:"Henrique", address:"1619 R St NW, Dupont, DC", district:"Dupont, DC", phone:"", notes:"Cliente 8 marmitas semanais."},
+      { id:"seed-larissa", name:"Larissa", address:"3510 Garfield St NW, DC", district:"DC", phone:"", notes:"Cliente 7 marmitas semanais."},
+      { id:"seed-paula-marion", name:"Paula Marion", address:"5009 Macon Rd, Rockville", district:"Rockville, MD", phone:"", notes:"Cliente 7 marmitas semanais."},
+      { id:"seed-claudia", name:"Claudia", address:"4409 Harrison Street NW, DC", district:"DC", phone:"", notes:"Cliente 7 marmitas semanais."},
+      { id:"seed-marcilia", name:"Marcília", address:"42280 Trackroom Ter, Aldie", district:"Aldie, VA", phone:"", notes:"Cliente 8 marmitas semanais."},
+      { id:"seed-crislaine", name:"Crislaine", address:"10435 Steeplechase Run Lane, Manassas", district:"Manassas, VA", phone:"", notes:"Cliente 7 marmitas semanais."},
+      { id:"seed-victor-leite", name:"Victor Leite", address:"1426 11th Street NW, Apt 4, DC", district:"DC", phone:"", notes:"Deixar na townhouse (1ª porta). Código: 5601."}
+    ];
+    seeds.forEach(seed => {
+      const exists = state.clients.some(c =>
+        (c.id === seed.id) ||
+        (c.name || '').toLowerCase() === seed.name.toLowerCase()
+      );
+      if (!exists) state.clients.push(seed);
+    });
+  }
+
+  const navButtons = document.querySelectorAll('nav button');
+  const viewContainer = document.getElementById('view-container');
+
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      navButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const view = btn.getAttribute('data-view');
+
+      if (view === 'clientes') editingClientId = null;
+      if (view === 'cardapio') editingProductId = null;
+      if (view === 'pedidos') editingOrderId = null;
+
+      renderView(view);
+    });
+  });
+
+  function renderView(view) {
+    switch (view) {
+      case 'dashboard': renderDashboard(); break;
+      case 'clientes': renderClientes(); break;
+      case 'cardapio': renderCardapio(); break;
+      case 'pedidos': renderPedidos(); break;
+      case 'producao': renderProducao(); break;
+      case 'entregas': renderEntregas(); break;
+      case 'financeiro': renderFinanceiro(); break;
+      default: renderDashboard();
+    }
+  }
+
+  // ========== DASHBOARD ==========
+  function renderDashboard() {
+    const today = getTodayISO();
+    const ordersToday = state.orders.filter(o => o.date === today);
+    const marmitasHoje = ordersToday.reduce((s, o) =>
+      s + (o.items || []).reduce((ac, it) => ac + (it.quantity || 0), 0), 0);
+
+    const totalToday = ordersToday.reduce((s, o) => s + (o.totalValue || 0), 0);
+    const ticketMedioHoje = ordersToday.length ? totalToday / ordersToday.length : 0;
+
+    const sevenDaysAgo = addDaysISO(today, -6);
+    const ordersLast7 = state.orders.filter(o => o.date >= sevenDaysAgo && o.date <= today);
+
+    viewContainer.innerHTML = `
+      <h2>Dashboard</h2>
+      <div class="card">
+        <div class="section-title">
+          <span>Resumo de hoje (${today})</span>
+          <span class="muted">Versão ${APP_VERSION}</span>
+        </div>
+
+        <div class="flex-row mt-8">
+          <button class="btn btn-secondary" id="btn-exportar">Exportar backup (.json)</button>
+          <button class="btn btn-secondary" id="btn-importar">Importar backup (.json)</button>
+          <input type="file" id="input-importar" accept="application/json" style="display:none;">
+          <button class="btn btn-ghost" id="btn-sync">Sincronizar agora</button>
+          <span class="muted" id="sync-status"></span>
+        </div>
+
+        <div class="cards-row mt-12">
+          <div class="stat-card">
+            <h4>Pedidos hoje</h4>
+            <strong>${ordersToday.length}</strong>
+          </div>
+          <div class="stat-card">
+            <h4>Marmitas hoje</h4>
+            <strong>${marmitasHoje}</strong>
+          </div>
+          <div class="stat-card">
+            <h4>Total vendido</h4>
+            <strong>${formatCurrency(totalToday)}</strong>
+          </div>
+          <div class="stat-card">
+            <h4>Ticket médio</h4>
+            <strong>${formatCurrency(ticketMedioHoje)}</strong>
+          </div>
+        </div>
+
+        <div class="grid-2 mt-12">
+          <div>
+            <h4>Status dos pedidos de hoje</h4>
+            <canvas id="chart-status"></canvas>
+            ${ordersToday.length === 0 ? '<p class="muted">Sem pedidos hoje para exibir gráfico.</p>' : ''}
+          </div>
+          <div>
+            <h4>Top produtos (últimos 7 dias)</h4>
+            <canvas id="chart-produtos"></canvas>
+            ${ordersLast7.length === 0 ? '<p class="muted">Sem pedidos nos últimos 7 dias.</p>' : ''}
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('btn-exportar').onclick = exportState;
+    const btnImportar = document.getElementById('btn-importar');
+    const inputImportar = document.getElementById('input-importar');
+    btnImportar.onclick = () => inputImportar.click();
+    inputImportar.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) importState(file);
+      inputImportar.value = '';
+    };
+
+    const syncStatus = document.getElementById('sync-status');
+    document.getElementById('btn-sync').onclick = async () => {
+      syncStatus.textContent = 'Sincronizando...';
+      await saveStateToSupabase();
+      await loadStateFromSupabase();
+      syncStatus.textContent = 'OK ✅';
+      renderDashboard();
+    };
+
+    if (dashboardStatusChart) {
+      dashboardStatusChart.destroy();
+      dashboardStatusChart = null;
+    }
+    if (ordersToday.length > 0 && typeof Chart !== 'undefined') {
+      const ctxStatus = document.getElementById('chart-status').getContext('2d');
+      const statusLabels = ['A produzir','Produzido','Entregue','Cancelado'];
+      const statusCounts = statusLabels.map(st =>
+        ordersToday.filter(o => o.status === st).length
+      );
+      dashboardStatusChart = new Chart(ctxStatus, {
+        type: 'pie',
+        data: { labels: statusLabels, datasets: [{ data: statusCounts }] },
+        options: { plugins: { legend: { position: 'bottom' } } }
+      });
+    }
+
+    if (dashboardProductsChart) {
+      dashboardProductsChart.destroy();
+      dashboardProductsChart = null;
+    }
+    if (ordersLast7.length > 0 && typeof Chart !== 'undefined') {
+      const produtoMap = {};
+      ordersLast7.forEach(o => {
+        (o.items || []).forEach(it => {
+          const p = findProductById(it.productId);
+          const nome = p ? p.name : 'Produto removido';
+          if (!produtoMap[nome]) produtoMap[nome] = 0;
+          produtoMap[nome] += it.quantity || 0;
+        });
+      });
+      const entries = Object.entries(produtoMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+      const labels = entries.map(e => e[0]);
+      const data = entries.map(e => e[1]);
+
+      const ctxProd = document.getElementById('chart-produtos').getContext('2d');
+      dashboardProductsChart = new Chart(ctxProd, {
+        type: 'bar',
+        data: { labels, datasets: [{ data }] },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+  }
+
+  // ========== CLIENTES ==========
+  function renderClientes() {
+    const isEditing = editingClientId !== null;
+    const clientToEdit = isEditing ? state.clients.find(c => c.id === editingClientId) : null;
+
+    viewContainer.innerHTML = `
+      <h2>Clientes</h2>
+      <div class="card">
+        <div class="section-title">
+          <span>${isEditing ? 'Editar cliente' : 'Novo cliente'}</span>
+        </div>
+
+        <form id="form-cliente">
+          <div class="form-grid">
+            <label>Nome
+              <input type="text" name="name" required value="${clientToEdit ? clientToEdit.name : ''}">
+            </label>
+            <label>Telefone / WhatsApp
+              <input type="text" name="phone" value="${clientToEdit ? (clientToEdit.phone || '') : ''}">
+            </label>
+            <label>Endereço
+              <input type="text" name="address" value="${clientToEdit ? (clientToEdit.address || '') : ''}">
+            </label>
+            <label>Bairro / Cidade
+              <input type="text" name="district" value="${clientToEdit ? (clientToEdit.district || '') : ''}">
+            </label>
+          </div>
+          <label>Observações (cliente)
+            <textarea name="notes" placeholder="Ex: Apto 302, portaria pede código, etc.">${clientToEdit ? (clientToEdit.notes || '') : ''}</textarea>
+          </label>
+
+          <div class="flex-row mt-8">
+            <button type="submit" class="btn btn-primary">
+              ${isEditing ? 'Atualizar cliente' : 'Salvar cliente'}
+            </button>
+            ${isEditing ? '<button type="button" id="btn-cancelar-edicao-cliente" class="btn btn-ghost">Cancelar edição</button>' : ''}
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="section-title">
+          <span>Lista de clientes</span>
+          <span class="muted">${state.clients.length} clientes cadastrados</span>
+        </div>
+
+        ${state.clients.length === 0 ? '<p class="muted">Nenhum cliente cadastrado ainda.</p>' : `
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>Bairro/Cidade</th>
+                <th>Endereço</th>
+                <th>Obs. cliente</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="clientes-tbody">
+              ${state.clients.map(c => `
+                <tr data-id="${c.id}">
+                  <td>${c.name}</td>
+                  <td>${c.phone || '-'}</td>
+                  <td>${c.district || '-'}</td>
+                  <td>${c.address || '-'}</td>
+                  <td>${c.notes || '-'}</td>
+                  <td>
+                    <button class="btn btn-secondary btn-editar-cliente">Editar</button>
+                    <button class="btn btn-danger btn-excluir-cliente">Excluir</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `}
+      </div>
+    `;
+
+    const form = document.getElementById('form-cliente');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const payload = {
+        name: data.get('name').trim(),
+        phone: data.get('phone').trim(),
+        address: data.get('address').trim(),
+        district: data.get('district').trim(),
+        notes: data.get('notes').trim()
+      };
+      if (!payload.name) {
+        alert('Nome é obrigatório.');
+        return;
+      }
+
+      if (editingClientId) {
+        const idx = state.clients.findIndex(c => c.id === editingClientId);
+        if (idx !== -1) state.clients[idx] = { ...state.clients[idx], ...payload };
+        editingClientId = null;
+      } else {
+        state.clients.push({ id: generateId(), ...payload });
+      }
+      saveState();
+      renderClientes();
+    });
+
+    const btnCancelarEdicao = document.getElementById('btn-cancelar-edicao-cliente');
+    if (btnCancelarEdicao) {
+      btnCancelarEdicao.addEventListener('click', () => {
+        editingClientId = null;
+        renderClientes();
+      });
+    }
+
+    const tbody = document.getElementById('clientes-tbody');
+    if (tbody) {
+      tbody.addEventListener('click', (e) => {
+        const tr = e.target.closest('tr');
+        if (!tr) return;
+        const id = tr.getAttribute('data-id');
+
+        if (e.target.classList.contains('btn-excluir-cliente')) {
+          if (confirm('Excluir este cliente? (não exclui pedidos já feitos)')) {
+            state.clients = state.clients.filter(c => c.id !== id);
+            saveState();
+            renderClientes();
+          }
+        }
+
+        if (e.target.classList.contains('btn-editar-cliente')) {
+          editingClientId = id;
+          renderClientes();
+        }
+      });
+    }
+  }
+
+  // ========== CARDÁPIO ==========
+  function renderCardapio() {
+    const isEditing = editingProductId !== null;
+    const productToEdit = isEditing ? state.products.find(p => p.id === editingProductId) : null;
+
+    viewContainer.innerHTML = `
+      <h2>Cardápio</h2>
+      <div class="card">
+        <div class="section-title">
+          <span>${isEditing ? 'Editar item do cardápio' : 'Novo produto'}</span>
+        </div>
+
+        <form id="form-produto">
+          <div class="form-grid">
+            <label>Nome do prato (sabor)
+              <input type="text" name="name" required value="${productToEdit ? productToEdit.name : ''}">
+            </label>
+            <label>Tipo de marmita
+              <select name="mealType">
+                <option value="" ${!productToEdit || !productToEdit.mealType ? 'selected' : ''}>Selecione...</option>
+                ${['Comfort Food','Fit','Low Carb','Vegetarian','Vegan','Keto','Outro'].map(t => `
+                  <option value="${t}" ${(productToEdit && productToEdit.mealType === t) ? 'selected' : ''}>${t}</option>
+                `).join('')}
+              </select>
+            </label>
+            <label>Vegetais (opcional)
+              <input type="text" name="category" placeholder="Brócolis, Aspargos, Mixed Veg..." value="${productToEdit ? (productToEdit.category || '') : ''}">
+            </label>
+            <label>Preço (USD)
+              <input type="number" name="price" min="0" step="0.01" required value="${productToEdit ? productToEdit.price : ''}">
+            </label>
+            <label>Ativo na semana?
+              <select name="active">
+                <option value="true" ${(productToEdit && productToEdit.active === true) || !productToEdit ? 'selected' : ''}>Sim</option>
+                <option value="false" ${(productToEdit && productToEdit.active === false) ? 'selected' : ''}>Não</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="flex-row mt-8">
+            <button type="submit" class="btn btn-primary">
+              ${isEditing ? 'Atualizar produto' : 'Salvar produto'}
+            </button>
+            ${isEditing ? '<button type="button" id="btn-cancelar-edicao-produto" class="btn btn-ghost">Cancelar edição</button>' : ''}
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="section-title">
+          <span>Produtos cadastrados</span>
+          <span class="muted">${state.products.length} produtos</span>
+        </div>
+
+        ${state.products.length === 0 ? '<p class="muted">Nenhum produto cadastrado.</p>' : `
+          <table>
+            <thead>
+              <tr>
+                <th>Nome (sabor)</th>
+                <th>Tipo</th>
+                <th>Vegetais</th>
+                <th>Preço</th>
+                <th>Ativo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="produtos-tbody">
+              ${state.products.map(p => `
+                <tr data-id="${p.id}">
+                  <td>${p.name}</td>
+                  <td>${p.mealType || '-'}</td>
+                  <td>${p.category || ''}</td>
+                  <td>${formatCurrency(p.price)}</td>
+                  <td>${p.active ? 'Sim' : 'Não'}</td>
+                  <td>
+                    <button class="btn btn-secondary btn-editar-produto">Editar</button>
+                    <button class="btn btn-danger btn-excluir-produto">Excluir</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `}
+      </div>
+    `;
+
+    const form = document.getElementById('form-produto');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const payload = {
+        name: data.get('name').trim(),
+        mealType: data.get('mealType'),
+        category: data.get('category').trim(),
+        price: Number(data.get('price')) || 0,
+        active: data.get('active') === 'true'
+      };
+      if (!payload.name) {
+        alert('Nome do prato é obrigatório.');
+        return;
+      }
+
+      if (editingProductId) {
+        const idx = state.products.findIndex(p => p.id === editingProductId);
+        if (idx !== -1) state.products[idx] = { ...state.products[idx], ...payload };
+        editingProductId = null;
+      } else {
+        state.products.push({ id: generateId(), ...payload });
+      }
+      saveState();
+      renderCardapio();
+    });
+
+    const btnCancelarEdicao = document.getElementById('btn-cancelar-edicao-produto');
+    if (btnCancelarEdicao) {
+      btnCancelarEdicao.addEventListener('click', () => {
+        editingProductId = null;
+        renderCardapio();
+      });
+    }
+
+    const tbody = document.getElementById('produtos-tbody');
+    if (tbody) {
+      tbody.addEventListener('click', (e) => {
+        const tr = e.target.closest('tr');
+        if (!tr) return;
+        const id = tr.getAttribute('data-id');
+
+        if (e.target.classList.contains('btn-excluir-produto')) {
+          if (confirm('Excluir este produto? (não exclui pedidos já feitos)')) {
+            state.products = state.products.filter(p => p.id !== id);
+            saveState();
+            renderCardapio();
+          }
+        }
+
+        if (e.target.classList.contains('btn-editar-produto')) {
+          editingProductId = id;
+          renderCardapio();
+        }
+      });
+    }
+  }
+
+  // ========== PEDIDOS (PRO) ==========
+  function renderPedidos() {
+    const today = getTodayISO();
+    if (!pedidosFiltroData) pedidosFiltroData = today;
+
+    const isEditing = editingOrderId !== null;
+    const orderToEdit = isEditing ? state.orders.find(o => o.id === editingOrderId) : null;
+
+    function getPedidosFiltrados(){
+      if (pedidosFiltroModo === 'todos') return state.orders.slice();
+      if (pedidosFiltroModo === 'data') return state.orders.filter(o => o.date === pedidosFiltroData);
+      return state.orders.filter(o => o.date === today);
+    }
+
+    const pedidosNow = getPedidosFiltrados();
+    const totalPedidosNow = pedidosNow.length;
+    const totalMarmitasNow = pedidosNow.reduce((s,o)=> s + (o.items||[]).reduce((a,it)=>a+(it.quantity||0),0),0);
+    const totalVendasNow = pedidosNow.reduce((s,o)=> s + (o.totalValue||0),0);
+    const ticketMedioNow = totalPedidosNow ? totalVendasNow/totalPedidosNow : 0;
+
+    viewContainer.innerHTML = `
+      <h2>Pedidos</h2>
+
+      <div class="card no-print">
+        <div class="section-title">
+          <span>Filtro de pedidos</span>
+          <span class="muted">Controla a lista abaixo</span>
+        </div>
+
+        <div class="flex-row">
+          <button class="btn btn-secondary" id="filtro-hoje">Hoje</button>
+
+          <label style="min-width:180px;">
+            Data específica
+            <input type="date" id="filtro-data" value="${pedidosFiltroData}">
+          </label>
+          <button class="btn btn-secondary" id="filtro-data-btn">Filtrar data</button>
+
+          <button class="btn btn-secondary" id="filtro-todos">Todos os dias</button>
+        </div>
+
+        <div class="cards-row mt-12">
+          <div class="stat-card">
+            <h4>Pedidos</h4>
+            <strong>${totalPedidosNow}</strong>
+          </div>
+          <div class="stat-card">
+            <h4>Marmitas</h4>
+            <strong>${totalMarmitasNow}</strong>
+          </div>
+          <div class="stat-card">
+            <h4>Total vendido</h4>
+            <strong>${formatCurrency(totalVendasNow)}</strong>
+          </div>
+          <div class="stat-card">
+            <h4>Ticket médio</h4>
+            <strong>${formatCurrency(ticketMedioNow)}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-orders">
+        <div class="card">
+          <div class="section-title">
+            <span>${isEditing ? 'Editar pedido' : 'Novo pedido'}</span>
+            ${isEditing ? `<span class="muted">ID: ${orderToEdit.id}</span>` : ''}
+          </div>
+
+          <form id="form-pedido">
+            <div class="form-grid">
+              <label>Data do pedido
+                <input type="date" name="date" value="${orderToEdit ? orderToEdit.date : today}" required>
+              </label>
+
+              <label>Cliente
+                <select name="clientId" required>
+                  <option value="">Selecione...</option>
+                  ${state.clients.map(c => `
+                    <option value="${c.id}" ${orderToEdit && orderToEdit.clientId === c.id ? 'selected' : ''}>
+                      ${c.name}
+                    </option>`).join('')}
+                </select>
+              </label>
+
+              <label>Forma de pagamento
+                <select name="paymentMethod" required>
+                  <option value="">Selecione...</option>
+                  ${['Zelle','Venmo','Dinheiro'].map(m => `
+                    <option value="${m}" ${orderToEdit && orderToEdit.paymentMethod === m ? 'selected' : ''}>
+                      ${m}
+                    </option>`).join('')}
+                </select>
+              </label>
+
+              <label>Frete (USD)
+                <input type="number" name="shippingFee" min="0" step="0.01" value="${orderToEdit ? (orderToEdit.shippingFee || 0) : 0}">
+              </label>
+
+              <label>Desconto (USD)
+                <input type="number" name="discountValue" min="0" step="0.01" value="${orderToEdit ? (orderToEdit.discountValue || 0) : 0}">
+              </label>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section-title">
+              <span>Itens do pedido</span>
+              <span class="muted">Somente produtos ativos</span>
+            </div>
+
+            <div class="item-add-grid">
+              <label>Produto
+                <select id="pedido-produto">
+                  <option value="">Selecione...</option>
+                  ${state.products.filter(p => p.active).map(p => `
+                    <option value="${p.id}">${productLabel(p)} - ${formatCurrency(p.price)}</option>
+                  `).join('')}
+                </select>
+              </label>
+
+              <label>Qtd
+                <input type="number" id="pedido-quantidade" min="1" value="1">
+              </label>
+
+              <label>Observação do item
+                <input type="text" id="pedido-item-nota" placeholder="Ex: sem feijão, extra legumes...">
+              </label>
+
+              <button type="button" class="btn btn-secondary" id="btn-add-item">Adicionar</button>
+            </div>
+
+            <div id="lista-itens" class="mt-12"></div>
+
+            <div class="mt-12 total-box">
+              <div class="total-row"><strong>Subtotal itens</strong><span id="subtotal-itens-label">${formatCurrency(0)}</span></div>
+              <div class="total-row"><strong>Frete</strong><span id="frete-label">${formatCurrency(orderToEdit ? orderToEdit.shippingFee||0 : 0)}</span></div>
+              <div class="total-row"><strong>Desconto</strong><span id="desconto-label">-${formatCurrency(orderToEdit ? orderToEdit.discountValue||0 : 0)}</span></div>
+              <div class="total-row total-final"><strong>Total do pedido</strong><span id="total-pedido-label">${formatCurrency(0)}</span></div>
+            </div>
+
+            <div class="flex-row mt-12">
+              <button type="submit" class="btn btn-primary">
+                ${isEditing ? 'Salvar alterações' : 'Salvar pedido'}
+              </button>
+
+              ${isEditing ? '<button type="button" id="btn-cancelar-edicao-pedido" class="btn btn-ghost">Cancelar edição</button>' : ''}
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="section-title">
+            <span id="titulo-lista-pedidos"></span>
+            <span class="muted" id="subtitulo-lista-pedidos"></span>
+          </div>
+
+          <div id="lista-pedidos-container"></div>
+        </div>
+      </div>
+    `;
+
+    const form = document.getElementById('form-pedido');
+    const selectProduto = document.getElementById('pedido-produto');
+    const inputQtd = document.getElementById('pedido-quantidade');
+    const inputItemNota = document.getElementById('pedido-item-nota');
+    const btnAddItem = document.getElementById('btn-add-item');
+    const divListaItens = document.getElementById('lista-itens');
+    const subtotalItensLabel = document.getElementById('subtotal-itens-label');
+    const freteLabel = document.getElementById('frete-label');
+    const descontoLabel = document.getElementById('desconto-label');
+    const totalLabel = document.getElementById('total-pedido-label');
+
+    let itensTemp = orderToEdit && orderToEdit.items
+      ? JSON.parse(JSON.stringify(orderToEdit.items))
+      : [];
+
+    function getFreteDescontoFromForm() {
+      const shippingFee = Math.max(0, Number(form.shippingFee.value) || 0);
+      const discountValue = Math.max(0, Number(form.discountValue.value) || 0);
+      return { shippingFee, discountValue };
+    }
+
+    function atualizarTotais() {
+      const subtotalItens = itensTemp.reduce((s, it) => s + it.lineTotal, 0);
+      const { shippingFee, discountValue } = getFreteDescontoFromForm();
+      const total = subtotalItens + shippingFee - discountValue;
+
+      subtotalItensLabel.textContent = formatCurrency(subtotalItens);
+      freteLabel.textContent = formatCurrency(shippingFee);
+      descontoLabel.textContent = `-${formatCurrency(discountValue)}`;
+      totalLabel.textContent = formatCurrency(total);
+    }
+
+    function atualizarListaItens() {
+      if (itensTemp.length === 0) {
+        divListaItens.innerHTML = '<p class="muted">Nenhum item adicionado ainda.</p>';
+        atualizarTotais();
+        return;
+      }
+
+      divListaItens.innerHTML = `
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Preço unitário</th>
+              <th>Qtd</th>
+              <th>Obs.</th>
+              <th>Total</th>
+              <th style="width:80px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itensTemp.map((it, idx) => {
+              const prod = findProductById(it.productId);
+              return `
+                <tr data-idx="${idx}">
+                  <td>${productLabel(prod)}</td>
+                  <td>${formatCurrency(it.unitPrice)}</td>
+                  <td>
+                    <input type="number" class="item-qty" data-idx="${idx}" min="1" value="${it.quantity}">
+                  </td>
+                  <td>${it.itemNote || '-'}</td>
+                  <td>${formatCurrency(it.lineTotal)}</td>
+                  <td>
+                    <button type="button" class="btn btn-danger btn-remover-item">Remover</button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+
+      const tbodyItens = divListaItens.querySelector('tbody');
+
+      tbodyItens.onclick = (e) => {
+        if (e.target.classList.contains('btn-remover-item')) {
+          const tr = e.target.closest('tr');
+          const idx = Number(tr.getAttribute('data-idx'));
+          itensTemp.splice(idx, 1);
+          atualizarListaItens();
+        }
+      };
+
+      tbodyItens.onchange = (e) => {
+        if (e.target.classList.contains('item-qty')) {
+          const idx = Number(e.target.getAttribute('data-idx'));
+          const novaQtd = Math.max(1, Number(e.target.value) || 1);
+          itensTemp[idx].quantity = novaQtd;
+          itensTemp[idx].lineTotal = novaQtd * itensTemp[idx].unitPrice;
+          atualizarListaItens();
+        }
+      };
+
+      atualizarTotais();
+    }
+
+    btnAddItem.addEventListener('click', () => {
+      const pid = selectProduto.value;
+      if (!pid) {
+        alert('Selecione um produto ativo.');
+        return;
+      }
+      const prod = findProductById(pid);
+      if (!prod) {
+        alert('Produto inválido.');
+        return;
+      }
+      const qtd = Number(inputQtd.value) || 1;
+      if (qtd <= 0) {
+        alert('Quantidade inválida.');
+        return;
+      }
+      const unitPrice = Number(prod.price) || 0;
+      const note = inputItemNota.value.trim();
+
+      const existing = itensTemp.find(it =>
+        it.productId === pid && (it.itemNote || '') === note
+      );
+
+      if (existing) {
+        existing.quantity += qtd;
+        existing.lineTotal = existing.quantity * existing.unitPrice;
+      } else {
+        itensTemp.push({
+          productId: pid,
+          quantity: qtd,
+          unitPrice,
+          lineTotal: unitPrice * qtd,
+          itemNote: note
+        });
+      }
+
+      atualizarListaItens();
+      inputQtd.value = 1;
+      inputItemNota.value = '';
+    });
+
+    form.shippingFee.oninput = atualizarTotais;
+    form.discountValue.oninput = atualizarTotais;
+
+    atualizarListaItens();
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      if (itensTemp.length === 0) {
+        alert('Adicione pelo menos um item ao pedido.');
+        return;
+      }
+
+      const data = new FormData(form);
+      const date = data.get('date');
+      const clientId = data.get('clientId');
+      const paymentMethod = data.get('paymentMethod');
+
+      if (!paymentMethod) {
+        alert('Selecione a forma de pagamento.');
+        return;
+      }
+
+      const subtotalItens = itensTemp.reduce((s, it) => s + it.lineTotal, 0);
+      const shippingFee = Math.max(0, Number(data.get('shippingFee')) || 0);
+      const discountValue = Math.max(0, Number(data.get('discountValue')) || 0);
+      const totalValue = subtotalItens + shippingFee - discountValue;
+
+      const payload = {
+        date,
+        clientId,
+        items: itensTemp.slice(),
+        paymentMethod,
+        shippingFee,
+        discountValue,
+        totalValue,
+        status: (orderToEdit && orderToEdit.status) ? orderToEdit.status : 'A produzir'
+      };
+
+      if (!editingOrderId) {
+        const existentesMesmoDia = state.orders.filter(
+          o => o.date === date && o.clientId === clientId
+        );
+        if (existentesMesmoDia.length > 0) {
+          const msg = `ATENÇÃO!\n\nJá existe ${existentesMesmoDia.length} pedido(s) para este cliente nesta data.\n\n` +
+                      `Clique em OK para criar mais um pedido ou em Cancelar para revisar.`;
+          if (!confirm(msg)) return;
+        }
+      }
+
+      if (editingOrderId) {
+        const idx = state.orders.findIndex(o => o.id === editingOrderId);
+        if (idx !== -1) state.orders[idx] = { ...state.orders[idx], ...payload };
+        editingOrderId = null;
+      } else {
+        state.orders.push({ id: generateId(), ...payload });
+      }
+
+      saveState();
+      renderPedidos();
+      renderDashboard();
+    });
+
+    const btnCancelarEdicaoPedido = document.getElementById('btn-cancelar-edicao-pedido');
+    if (btnCancelarEdicaoPedido) {
+      btnCancelarEdicaoPedido.onclick = () => {
+        editingOrderId = null;
+        renderPedidos();
+      };
+    }
+
+    const listaContainer = document.getElementById('lista-pedidos-container');
+    const tituloLista = document.getElementById('titulo-lista-pedidos');
+    const subtituloLista = document.getElementById('subtitulo-lista-pedidos');
+
+    function renderListaPedidos(){
+      const pedidos = getPedidosFiltrados().sort((a,b)=> b.date.localeCompare(a.date));
+
+      if (pedidosFiltroModo === 'todos') {
+        tituloLista.textContent = 'Lista de pedidos – Todos os dias';
+        subtituloLista.textContent = 'Mostrando todos os pedidos cadastrados';
+      } else if (pedidosFiltroModo === 'data') {
+        tituloLista.textContent = `Lista de pedidos – ${pedidosFiltroData}`;
+        subtituloLista.textContent = 'Pedidos da data selecionada';
+      } else {
+        tituloLista.textContent = `Lista de pedidos – Hoje (${today})`;
+        subtituloLista.textContent = 'Somente pedidos do dia';
+      }
+
+      if (pedidos.length === 0) {
+        listaContainer.innerHTML = `<p class="muted">Nenhum pedido neste filtro.</p>`;
+        return;
+      }
+
+      listaContainer.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Cliente</th>
+              <th>Itens</th>
+              <th>Subtotal</th>
+              <th>Frete</th>
+              <th>Desconto</th>
+              <th>Total</th>
+              <th>Pagamento</th>
+              <th style="width:160px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pedidos.map(o => {
+              const client = findClientById(o.clientId);
+              const resumo = (o.items || []).map(it => {
+                const p = findProductById(it.productId);
+                const obs = it.itemNote ? ` (${it.itemNote})` : '';
+                return `${it.quantity}x ${productLabel(p)}${obs}`;
+              }).join('<br>');
+
+              const subtotalItens = (o.items || []).reduce((s,it)=> s + (it.lineTotal||0), 0);
+
+              return `
+                <tr data-id="${o.id}">
+                  <td>${o.date}</td>
+                  <td>${client ? client.name : '(cliente removido)'}</td>
+                  <td>${resumo || '-'}</td>
+                  <td>${formatCurrency(subtotalItens)}</td>
+                  <td>${formatCurrency(o.shippingFee || 0)}</td>
+                  <td>-${formatCurrency(o.discountValue || 0)}</td>
+                  <td><strong>${formatCurrency(o.totalValue || 0)}</strong></td>
+                  <td>${o.paymentMethod || '-'}</td>
+                  <td>
+                    <button class="btn btn-secondary" data-action="edit">Editar</button>
+                    <button class="btn btn-danger" data-action="delete">Excluir</button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    listaContainer.onclick = (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+
+      const tr = e.target.closest('tr');
+      if (!tr) return;
+      const id = tr.getAttribute('data-id');
+      const action = btn.getAttribute('data-action');
+
+      if (action === 'delete') {
+        if (confirm('Excluir este pedido?')) {
+          state.orders = state.orders.filter(o => o.id !== id);
+          saveState();
+          renderPedidos();
+          renderDashboard();
+        }
+      }
+
+      if (action === 'edit') {
+        editingOrderId = id;
+        renderPedidos();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    document.getElementById('filtro-hoje').onclick = () => {
+      pedidosFiltroModo = 'hoje';
+      pedidosFiltroData = today;
+      renderPedidos();
+    };
+
+    document.getElementById('filtro-data-btn').onclick = () => {
+      pedidosFiltroModo = 'data';
+      pedidosFiltroData = document.getElementById('filtro-data').value || today;
+      renderPedidos();
+    };
+
+    document.getElementById('filtro-todos').onclick = () => {
+      pedidosFiltroModo = 'todos';
+      renderPedidos();
+    };
+
+    renderListaPedidos();
+  }
+
+  // ========== PRODUÇÃO DO DIA ==========
+  function renderProducao() {
+    const today = getTodayISO();
+    viewContainer.innerHTML = `
+      <h2>Produção do dia</h2>
+      <div class="card">
+        <div class="form-grid">
+          <label>Data
+            <input type="date" id="producao-data" value="${today}">
+          </label>
+        </div>
+        <div class="flex-row">
+          <button class="btn btn-primary" id="btn-atualizar-producao">Atualizar</button>
+          <button class="btn btn-secondary" id="btn-pdf-producao">Gerar PDF para cozinha</button>
+          <button class="btn btn-secondary" id="btn-abrir-relatorio">Abrir relatório em outra aba</button>
+        </div>
+        <div class="flex-row mt-8">
+          <span class="muted">Modo de relatório:</span>
+          <button class="btn btn-secondary" id="btn-modo-completo">Completo</button>
+          <button class="btn btn-secondary" id="btn-modo-resumo">Resumo + totais</button>
+        </div>
+        <div id="producao-resultado" class="mt-12"></div>
+      </div>
+    `;
+
+    const inputData = document.getElementById('producao-data');
+    const btnAtualizar = document.getElementById('btn-atualizar-producao');
+    const btnPdf = document.getElementById('btn-pdf-producao');
+    const btnNovaAba = document.getElementById('btn-abrir-relatorio');
+    const btnModoCompleto = document.getElementById('btn-modo-completo');
+    const btnModoResumo = document.getElementById('btn-modo-resumo');
+    const divResultado = document.getElementById('producao-resultado');
+
+    let modoRelatorio = 'completo';
+
+    function calcular() {
+      const dataSel = inputData.value;
+      const pedidosDia = state.orders.filter(
+        o => o.date === dataSel && o.status !== 'Cancelado'
+      );
+      if (pedidosDia.length === 0) {
+        divResultado.innerHTML = `<p class="muted">Nenhum pedido para esta data.</p>`;
+        return;
+      }
+
+      const grupos = {};
+      let totalGeral = 0;
+      const totaisPorProduto = {};
+
+      pedidosDia.forEach(o => {
+        const client = findClientById(o.clientId);
+        const clientName = client ? client.name : '(cliente removido)';
+
+        if (!grupos[o.clientId]) {
+          grupos[o.clientId] = { clientName, itens: {}, totalCliente: 0 };
+        }
+        const grupo = grupos[o.clientId];
+
+        (o.items || []).forEach(it => {
+          const p = findProductById(it.productId);
+          const note = it.itemNote || '';
+          const key = it.productId + '|' + note;
+          const qty = it.quantity || 0;
+
+          if (!grupo.itens[key]) {
+            grupo.itens[key] = {
+              productName: p ? p.name : 'Produto removido',
+              mealType: p ? (p.mealType || 'Sem tipo') : 'Sem tipo',
+              veggies: p ? (p.category || '') : '',
+              itemNote: note,
+              qty: 0
+            };
+          }
+          grupo.itens[key].qty += qty;
+          grupo.totalCliente += qty;
+          totalGeral += qty;
+
+          if (!totaisPorProduto[it.productId]) {
+            totaisPorProduto[it.productId] = {
+              productName: p ? p.name : 'Produto removido',
+              totalQty: 0,
+              obsMap: {}
+            };
+          }
+          const tp = totaisPorProduto[it.productId];
+          tp.totalQty += qty;
+          if (note) {
+            if (!tp.obsMap[note]) tp.obsMap[note] = 0;
+            tp.obsMap[note] += qty;
+          }
+        });
+      });
+
+      const gruposArray = Object.values(grupos).sort((a, b) =>
+        a.clientName.localeCompare(b.clientName)
+      );
+      const totaisProdArray = Object.values(totaisPorProduto).sort((a, b) =>
+        a.productName.localeCompare(b.productName)
+      );
+      const totalClientes = gruposArray.length;
+      const totalSabores = totaisProdArray.length;
+
+      let totalComObsGeral = 0;
+      totaisProdArray.forEach(tp => {
+        totalComObsGeral += Object.values(tp.obsMap).reduce((s, qtd) => s + qtd, 0);
+      });
+      const totalSemObsGeral = totalGeral - totalComObsGeral;
+
+      let blocosClientes = '';
+      gruposArray.forEach(g => {
+        const itensArray = Object.values(g.itens).sort((a, b) =>
+          a.productName.localeCompare(b.productName)
+        );
+        let rows = '';
+        itensArray.forEach(e => {
+          rows += `
+            <tr>
+              <td>${e.productName}</td>
+              <td>${e.mealType || '-'}</td>
+              <td>${e.veggies || '-'}</td>
+              <td>${e.qty}</td>
+              <td>${e.itemNote || '-'}</td>
+            </tr>
+          `;
+        });
+        blocosClientes += `
+          <h3 style="margin-top:16px;">${g.clientName} – Total de marmitas: ${g.totalCliente}</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Produto (sabor)</th>
+                <th>Tipo</th>
+                <th>Vegetais</th>
+                <th>Quantidade</th>
+                <th>Obs. do item</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      });
+
+      let blocosTotaisProduto = '';
+      totaisProdArray.forEach(tp => {
+        const obsEntries = Object.entries(tp.obsMap);
+        const obsTotal = obsEntries.reduce((s, [, qtd]) => s + qtd, 0);
+        const semObsQty = tp.totalQty - obsTotal;
+
+        let linhas = '';
+        if (semObsQty > 0) {
+          linhas += `<div class="linha-sem-obs">${tp.productName}: ${semObsQty}</div>`;
+        }
+        if (obsEntries.length > 0) {
+          obsEntries.forEach(([nota, qtd]) => {
+            linhas += `<div class="linha-obs">${nota}: ${qtd}</div>`;
+          });
+        }
+
+        blocosTotaisProduto += `
+          <div class="stat-card totais-produto-card">
+            <h4>${tp.productName}</h4>
+            <div>${linhas || '<div>-</div>'}</div>
+            <div class="totais-total">Quantidade Total: ${tp.totalQty}</div>
+          </div>
+        `;
+      });
+
+      let html = `
+        <h3>Resumo da produção – ${dataSel}</h3>
+        <div class="cards-row resumo-cards">
+          <div class="stat-card">
+            <h4>Total geral de marmitas</h4>
+            <strong>${totalGeral}</strong>
+          </div>
+          <div class="stat-card">
+            <h4>Clientes no dia</h4>
+            <strong>${totalClientes}</strong>
+          </div>
+          <div class="stat-card">
+            <h4>Sabores diferentes</h4>
+            <strong>${totalSabores}</strong>
+          </div>
+          <div class="stat-card">
+            <h4>Com observação</h4>
+            <strong>${totalComObsGeral}</strong>
+            <div class="muted">Sem observação: ${totalSemObsGeral}</div>
+          </div>
+        </div>
+      `;
+
+      if (modoRelatorio === 'completo') {
+        html += `
+          <div class="mt-12">
+            <h3>Marmitas por cliente</h3>
+            <p class="muted">Visão detalhada por cliente.</p>
+            ${blocosClientes}
+          </div>
+        `;
+      }
+
+      html += `
+        <div class="mt-12">
+          <h3>Totais gerais por produto (para a cozinha)</h3>
+          <div class="cards-row">${blocosTotaisProduto}</div>
+        </div>
+      `;
+
+      divResultado.innerHTML = html;
+    }
+
+    btnAtualizar.addEventListener('click', calcular);
+    btnPdf.addEventListener('click', () => window.print());
+
+    btnNovaAba.addEventListener('click', () => {
+      const dataSel = inputData.value;
+      const conteudo = divResultado.innerHTML || '<p>Nenhum dado para mostrar.</p>';
+      const win = window.open('', '_blank');
+      win.document.write(`
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>Relatório de produção - ${dataSel}</title>
+            <style>
+              :root { --green-main:#567730; --orange-main:#f7941d; }
+              body { font-family: system-ui, sans-serif; padding:16px; }
+              h2,h3,h4{ color:var(--green-main); }
+              .muted{ color:#718096; font-size:12px; }
+              table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+              th,td{ border-bottom:1px solid #e2e8f0; padding:6px 8px; text-align:left; }
+              th{ background:#f7fafc; font-weight:600; }
+              .cards-row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-top:8px; }
+              .stat-card{ background:#f7faf5; border-radius:10px; padding:10px 12px; border:1px solid var(--green-main); }
+              .stat-card strong{ color:var(--orange-main); font-size:16px; }
+              .totais-produto-card .linha-sem-obs,
+              .totais-produto-card .linha-obs{ color:var(--green-main); font-weight:400; font-size:14px; margin-top:4px; }
+              .totais-produto-card .totais-total{ margin-top:8px; font-weight:600; color:var(--orange-main); font-size:13px; }
+            </style>
+          </head>
+          <body>
+            <h2>Relatório de produção – ${dataSel}</h2>
+            ${conteudo}
+          </body>
+        </html>
+      `);
+      win.document.close();
+    });
+
+    btnModoCompleto.addEventListener('click', () => { modoRelatorio = 'completo'; calcular(); });
+    btnModoResumo.addEventListener('click', () => { modoRelatorio = 'resumo'; calcular(); });
+
+    calcular();
+  }
+
+  // ========== ENTREGAS ==========
+  function renderEntregas() {
+    const today = getTodayISO();
+    viewContainer.innerHTML = `
+      <h2>Entregas do dia</h2>
+      <div class="card">
+        <div class="form-grid">
+          <label>Data
+            <input type="date" id="entregas-data" value="${today}">
+          </label>
+        </div>
+        <button class="btn btn-primary" id="btn-atualizar-entregas">Atualizar</button>
+        <div id="entregas-resultado" class="mt-12"></div>
+      </div>
+    `;
+
+    const inputData = document.getElementById('entregas-data');
+    const btnAtualizar = document.getElementById('btn-atualizar-entregas');
+    const divResultado = document.getElementById('entregas-resultado');
+
+    function calcular() {
+      const dataSel = inputData.value;
+      const pedidosDia = state.orders.filter(
+        o => o.date === dataSel && o.status !== 'Cancelado'
+      );
+      if (pedidosDia.length === 0) {
+        divResultado.innerHTML = `<p class="muted">Nenhuma entrega para esta data.</p>`;
+        return;
+      }
+
+      let rows = '';
+      pedidosDia.forEach(o => {
+        const client = findClientById(o.clientId);
+        const itensDescricao = (o.items || []).map(it => {
+          const p = findProductById(it.productId);
+          const obs = it.itemNote ? ` (${it.itemNote})` : '';
+          return `${it.quantity}x ${productLabel(p)}${obs}`;
+        }).join('<br>');
+        rows += `
+          <tr>
+            <td>${client ? client.name : '(cliente removido)'}</td>
+            <td>${client ? (client.address || '') : ''}</td>
+            <td>${client ? (client.district || '') : ''}</td>
+            <td>${client ? (client.phone || '') : ''}</td>
+            <td>${client ? (client.notes || '') : ''}</td>
+            <td>${itensDescricao || '-'}</td>
+            <td>${o.status}</td>
+          </tr>
+        `;
+      });
+
+      divResultado.innerHTML = `
+        <h3>Entregas para ${dataSel}</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Endereço</th>
+              <th>Bairro/Cidade</th>
+              <th>Telefone</th>
+              <th>Obs. cliente</th>
+              <th>Itens</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    btnAtualizar.addEventListener('click', calcular);
+    calcular();
+  }
+
+  // ========== FINANCEIRO ==========
+  function renderFinanceiro() {
+    const today = getTodayISO();
+    viewContainer.innerHTML = `
+      <h2>Financeiro</h2>
+      <div class="card">
+        <div class="form-grid">
+          <label>Data inicial
+            <input type="date" id="fin-data-inicio">
+          </label>
+          <label>Data final
+            <input type="date" id="fin-data-fim">
+          </label>
+        </div>
+        <div class="flex-row">
+          <button class="btn btn-primary" id="btn-atualizar-financeiro">Calcular</button>
+          <button class="btn btn-secondary" id="btn-fin-hoje">Hoje (${today})</button>
+          <button class="btn btn-secondary" id="btn-fin-7">Últimos 7 dias</button>
+          <button class="btn btn-secondary" id="btn-fin-30">Últimos 30 dias</button>
+        </div>
+        <div id="financeiro-resultado" class="mt-12"></div>
+      </div>
+    `;
+
+    const inputInicio = document.getElementById('fin-data-inicio');
+    const inputFim = document.getElementById('fin-data-fim');
+    const btnAtualizar = document.getElementById('btn-atualizar-financeiro');
+    const btnHoje = document.getElementById('btn-fin-hoje');
+    const btn7 = document.getElementById('btn-fin-7');
+    const btn30 = document.getElementById('btn-fin-30');
+    const divResultado = document.getElementById('financeiro-resultado');
+
+    function filtrarPedidos() {
+      const ini = inputInicio.value;
+      const fim = inputFim.value;
+      return state.orders.filter(o => {
+        if (ini && o.date < ini) return false;
+        if (fim && o.date > fim) return false;
+        return true;
+      });
+    }
+
+    function calcular() {
+      const pedidos = filtrarPedidos();
+      if (financeLineChart) {
+        financeLineChart.destroy();
+        financeLineChart = null;
+      }
+
+      if (pedidos.length === 0) {
+        divResultado.innerHTML = `<p class="muted">Nenhum pedido neste período.</p>`;
+        return;
+      }
+
+      const total = pedidos.reduce((s, o) => s + (o.totalValue || 0), 0);
+      const ticketMedio = pedidos.length ? total / pedidos.length : 0;
+
+      const porMetodo = {};
+      pedidos.forEach(o => {
+        const m = o.paymentMethod || 'Não informado';
+        if (!porMetodo[m]) porMetodo[m] = 0;
+        porMetodo[m] += o.totalValue || 0;
+      });
+      let tabelaMetodo = '';
+      Object.entries(porMetodo).forEach(([metodo, val]) => {
+        tabelaMetodo += `
+          <tr>
+            <td>${metodo}</td>
+            <td>${formatCurrency(val)}</td>
+          </tr>
+        `;
+      });
+
+      const porCliente = {};
+      pedidos.forEach(o => {
+        const c = findClientById(o.clientId);
+        const nome = c ? c.name : '(cliente removido)';
+        if (!porCliente[nome]) porCliente[nome] = 0;
+        porCliente[nome] += o.totalValue || 0;
+      });
+      const topClientes = Object.entries(porCliente)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+      let tabelaClientes = '';
+      topClientes.forEach(([nome, val]) => {
+        tabelaClientes += `
+          <tr>
+            <td>${nome}</td>
+            <td>${formatCurrency(val)}</td>
+          </tr>
+        `;
+      });
+
+      const porDia = {};
+      pedidos.forEach(o => {
+        if (!porDia[o.date]) porDia[o.date] = 0;
+        porDia[o.date] += o.totalValue || 0;
+      });
+      const datasOrdenadas = Object.keys(porDia).sort();
+      const valoresDia = datasOrdenadas.map(d => porDia[d]);
+
+      divResultado.innerHTML = `
+        <div class="cards-row">
+          <div class="stat-card">
+            <h4>Total vendido</h4>
+            <strong>${formatCurrency(total)}</strong>
+          </div>
+          <div class="stat-card">
+            <h4>Pedidos</h4>
+            <strong>${pedidos.length}</strong>
+          </div>
+          <div class="stat-card">
+            <h4>Ticket médio</h4>
+            <strong>${formatCurrency(ticketMedio)}</strong>
+          </div>
+        </div>
+
+        <div class="grid-2 mt-12">
+          <div>
+            <h4>Totais por forma de pagamento</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>Método</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>${tabelaMetodo}</tbody>
+            </table>
+          </div>
+          <div>
+            <h4>Top clientes no período</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>${tabelaClientes}</tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mt-12">
+          <h4>Evolução diária das vendas</h4>
+          <canvas id="chart-finance"></canvas>
+        </div>
+      `;
+
+      if (typeof Chart !== 'undefined') {
+        const ctxFin = document.getElementById('chart-finance').getContext('2d');
+        financeLineChart = new Chart(ctxFin, {
+          type: 'line',
+          data: { labels: datasOrdenadas, datasets: [{ data: valoresDia }] },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      }
+    }
+
+    btnAtualizar.addEventListener('click', calcular);
+    btnHoje.addEventListener('click', () => {
+      const t = getTodayISO();
+      inputInicio.value = t;
+      inputFim.value = t;
+      calcular();
+    });
+    btn7.addEventListener('click', () => {
+      const t = getTodayISO();
+      inputInicio.value = addDaysISO(t, -6);
+      inputFim.value = t;
+      calcular();
+    });
+    btn30.addEventListener('click', () => {
+      const t = getTodayISO();
+      inputInicio.value = addDaysISO(t, -29);
+      inputFim.value = t;
+      calcular();
+    });
+  }
+
+  // ====== BOOT ======
+  loadStateLocal();
+  seedClientsIfMissing();
+  saveStateLocal();
+
+  // tenta puxar do Supabase (se estiver online)
+  (async () => {
+    const ok = await loadStateFromSupabase();
+    if (ok) {
+      renderView('dashboard');
+    } else {
+      renderView('dashboard');
+    }
+  })();
+
+  // sincroniza ao voltar internet
+  window.addEventListener('online', () => saveStateToSupabase());
+</script>
+</body>
+</html>
