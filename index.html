@@ -6,8 +6,6 @@
 
   <!-- Chart.js para gráficos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Supabase client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
@@ -405,11 +403,11 @@
          onerror="this.onerror=null; this.src='mealprepusa-logo.png';">
     <div>
       <h1>Meal Prep USA – Sistema de Marmitas</h1>
-      <small>Uso local+cloud • Sincroniza com Supabase • Valores em USD</small>
+      <small>Uso local • Dados salvos no navegador • Valores em USD</small>
     </div>
   </div>
   <div class="muted">
-    Versão 5.0 • Supabase+Netlify • Off-line seguro
+    Versão 4.4 • Pedidos pro • Sem status na tela • Seeds clientes
   </div>
 </header>
 
@@ -429,13 +427,8 @@
 </div>
 
 <script>
-  // ====== SUPABASE CONFIG ======
-  const SUPABASE_URL = "https://dbmzcqusygysoljrduvp.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRibXpjcXVzeWd5c29sanJkdXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5OTkzNzYsImV4cCI6MjA3OTU3NTM3Nn0.i2h1PvxlGRuNNfl6fj_scL630AR3kTW4Gd26L0Z-rfg";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
   const STORAGE_KEY = 'mealprepusa_marmitas_v2_5';
-  const APP_VERSION = '5.0';
+  const APP_VERSION = '4.4';
 
   let state = {
     version: APP_VERSION,
@@ -455,9 +448,6 @@
   let dashboardStatusChart = null;
   let dashboardProductsChart = null;
   let financeLineChart = null;
-
-  // ====== BASIC SYNC LAYER (offline-first) ======
-  let isSyncing = false;
 
   function generateId() {
     return Date.now().toString() + Math.floor(Math.random() * 1000).toString();
@@ -509,95 +499,143 @@
     return s;
   }
 
-  function loadStateLocal() {
+  function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
         state = migrateState(parsed);
-      } else {
-        state = migrateState(state);
       }
     } catch (e) {
-      console.error('Erro ao carregar local:', e);
+      console.error('Erro ao carregar estado:', e);
       state = migrateState(state);
     }
   }
 
-  function saveStateLocal() {
+  function saveState() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
-      console.error('Erro ao salvar local:', e);
+      console.error('Erro ao salvar estado:', e);
       alert('Erro ao salvar dados no navegador.');
     }
   }
 
-  async function loadStateFromSupabase() {
-    try {
-      const [{ data: clients, error: ec },
-             { data: products, error: ep },
-             { data: orders, error: eo }] = await Promise.all([
-        supabase.from('clients').select('*'),
-        supabase.from('products').select('*'),
-        supabase.from('orders').select('*')
-      ]);
-      if (ec || ep || eo) {
-        console.warn('Erro Supabase load:', ec||ep||eo);
-        return false;
+  function seedClientsIfMissing(){
+    const seeds = [
+      {
+        id: "seed-celeste",
+        name: "Celeste",
+        address: "3720 Albemarle St NW, DC",
+        district: "DC",
+        phone: "",
+        notes: "Cliente 9 marmitas semanais."
+      },
+      {
+        id: "seed-rodrigo",
+        name: "Rodrigo",
+        address: "1600 N Oak St, Arlington, VA",
+        district: "Arlington, VA",
+        phone: "",
+        notes: "Cliente 16 marmitas semanais."
+      },
+      {
+        id: "seed-carla",
+        name: "Carla",
+        address: "513 Goodland Place, Rockville",
+        district: "Rockville, MD",
+        phone: "",
+        notes: "🚨 Sem limão, sem azeite, sem tempero. Apenas sal. 📌 Legumes: abobrinha, cenoura, batata doce, batata, berinjela, repolho roxo, repolho verde."
+      },
+      {
+        id: "seed-bernardo",
+        name: "Bernardo",
+        address: "10454 Parthenon, Bethesda",
+        district: "Bethesda, MD",
+        phone: "",
+        notes: "Cliente 7 marmitas semanais."
+      },
+      {
+        id: "seed-gabriela",
+        name: "Gabriela",
+        address: "Ashburn, VA",
+        district: "Ashburn, VA",
+        phone: "",
+        notes: "Total semanal FREE (cortesia)."
+      },
+      {
+        id: "seed-lili",
+        name: "Lili",
+        address: "102 Westwick Ct, Unit 2, Sterling",
+        district: "Sterling, VA",
+        phone: "",
+        notes: "Cliente 7 marmitas semanais."
+      },
+      {
+        id: "seed-henrique",
+        name: "Henrique",
+        address: "1619 R St NW, Dupont, DC",
+        district: "Dupont, DC",
+        phone: "",
+        notes: "Cliente 8 marmitas semanais."
+      },
+      {
+        id: "seed-larissa",
+        name: "Larissa",
+        address: "3510 Garfield St NW, DC",
+        district: "DC",
+        phone: "",
+        notes: "Cliente 7 marmitas semanais."
+      },
+      {
+        id: "seed-paula-marion",
+        name: "Paula Marion",
+        address: "5009 Macon Rd, Rockville",
+        district: "Rockville, MD",
+        phone: "",
+        notes: "Cliente 7 marmitas semanais."
+      },
+      {
+        id: "seed-claudia",
+        name: "Claudia",
+        address: "4409 Harrison Street NW, DC",
+        district: "DC",
+        phone: "",
+        notes: "Cliente 7 marmitas semanais."
+      },
+      {
+        id: "seed-marcilia",
+        name: "Marcília",
+        address: "42280 Trackroom Ter, Aldie",
+        district: "Aldie, VA",
+        phone: "",
+        notes: "Cliente 8 marmitas semanais."
+      },
+      {
+        id: "seed-crislaine",
+        name: "Crislaine",
+        address: "10435 Steeplechase Run Lane, Manassas",
+        district: "Manassas, VA",
+        phone: "",
+        notes: "Cliente 7 marmitas semanais."
+      },
+      {
+        id: "seed-victor-leite",
+        name: "Victor Leite",
+        address: "1426 11th Street NW, Apt 4, DC",
+        district: "DC",
+        phone: "",
+        notes: "Deixar na townhouse (1ª porta). Código: 5601."
       }
-      state.clients = (clients || []).map(c => ({
-        id: c.id, name: c.name||'', phone: c.phone||'',
-        address: c.address||'', district: c.district||'', notes: c.notes||''
-      }));
-      state.products = (products || []).map(p => ({
-        id: p.id, name: p.name||'', mealType: p.mealType||'',
-        category: p.category||'', price: Number(p.price)||0,
-        active: (typeof p.active === 'boolean') ? p.active : true
-      }));
-      state.orders = (orders || []).map(o => ({
-        id: o.id,
-        date: (o.date||getTodayISO()).slice(0,10),
-        clientId: o.clientId||'',
-        paymentMethod: o.paymentMethod||'',
-        items: Array.isArray(o.items) ? o.items : [],
-        shippingFee: Number(o.shippingFee)||0,
-        discountValue: Number(o.discountValue)||0,
-        totalValue: Number(o.totalValue)||0,
-        status: o.status||'A produzir',
-      }));
-      state.version = APP_VERSION;
-      saveStateLocal();
-      return true;
-    } catch (e) {
-      console.warn('Supabase offline?', e);
-      return false;
-    }
-  }
+    ];
 
-  async function saveStateToSupabase() {
-    if (isSyncing) return;
-    isSyncing = true;
-    try {
-      // upsert all tables (id as PK)
-      const p1 = supabase.from('clients').upsert(state.clients, { onConflict: 'id' });
-      const p2 = supabase.from('products').upsert(state.products, { onConflict: 'id' });
-      const p3 = supabase.from('orders').upsert(state.orders, { onConflict: 'id' });
-      const [r1,r2,r3] = await Promise.all([p1,p2,p3]);
-      if (r1.error || r2.error || r3.error) {
-        console.warn('Erro Supabase save:', r1.error||r2.error||r3.error);
-      }
-    } catch (e) {
-      console.warn('Supabase save falhou (offline)', e);
-    } finally {
-      isSyncing = false;
-    }
-  }
-
-  function saveState() {
-    saveStateLocal();
-    // tenta sincronizar sem travar a UI
-    saveStateToSupabase();
+    seeds.forEach(seed => {
+      const exists = state.clients.some(c =>
+        (c.id === seed.id) ||
+        (c.name || '').toLowerCase() === seed.name.toLowerCase()
+      );
+      if (!exists) state.clients.push(seed);
+    });
   }
 
   function formatCurrency(value) {
@@ -642,7 +680,7 @@
 
   function importState(file) {
     const reader = new FileReader();
-    reader.onload = async () => {
+    reader.onload = () => {
       try {
         const imported = JSON.parse(reader.result);
         const migrated = migrateState(imported);
@@ -657,31 +695,6 @@
       }
     };
     reader.readAsText(file);
-  }
-
-  function seedClientsIfMissing(){
-    const seeds = [
-      { id:"seed-celeste", name:"Celeste", address:"3720 Albemarle St NW, DC", district:"DC", phone:"", notes:"Cliente 9 marmitas semanais."},
-      { id:"seed-rodrigo", name:"Rodrigo", address:"1600 N Oak St, Arlington, VA", district:"Arlington, VA", phone:"", notes:"Cliente 16 marmitas semanais."},
-      { id:"seed-carla", name:"Carla", address:"513 Goodland Place, Rockville", district:"Rockville, MD", phone:"", notes:"🚨 Sem limão, sem azeite, sem tempero. Apenas sal. 📌 Legumes: abobrinha, cenoura, batata doce, batata, berinjela, repolho roxo, repolho verde."},
-      { id:"seed-bernardo", name:"Bernardo", address:"10454 Parthenon, Bethesda", district:"Bethesda, MD", phone:"", notes:"Cliente 7 marmitas semanais."},
-      { id:"seed-gabriela", name:"Gabriela", address:"Ashburn, VA", district:"Ashburn, VA", phone:"", notes:"Total semanal FREE (cortesia)."},
-      { id:"seed-lili", name:"Lili", address:"102 Westwick Ct, Unit 2, Sterling", district:"Sterling, VA", phone:"", notes:"Cliente 7 marmitas semanais."},
-      { id:"seed-henrique", name:"Henrique", address:"1619 R St NW, Dupont, DC", district:"Dupont, DC", phone:"", notes:"Cliente 8 marmitas semanais."},
-      { id:"seed-larissa", name:"Larissa", address:"3510 Garfield St NW, DC", district:"DC", phone:"", notes:"Cliente 7 marmitas semanais."},
-      { id:"seed-paula-marion", name:"Paula Marion", address:"5009 Macon Rd, Rockville", district:"Rockville, MD", phone:"", notes:"Cliente 7 marmitas semanais."},
-      { id:"seed-claudia", name:"Claudia", address:"4409 Harrison Street NW, DC", district:"DC", phone:"", notes:"Cliente 7 marmitas semanais."},
-      { id:"seed-marcilia", name:"Marcília", address:"42280 Trackroom Ter, Aldie", district:"Aldie, VA", phone:"", notes:"Cliente 8 marmitas semanais."},
-      { id:"seed-crislaine", name:"Crislaine", address:"10435 Steeplechase Run Lane, Manassas", district:"Manassas, VA", phone:"", notes:"Cliente 7 marmitas semanais."},
-      { id:"seed-victor-leite", name:"Victor Leite", address:"1426 11th Street NW, Apt 4, DC", district:"DC", phone:"", notes:"Deixar na townhouse (1ª porta). Código: 5601."}
-    ];
-    seeds.forEach(seed => {
-      const exists = state.clients.some(c =>
-        (c.id === seed.id) ||
-        (c.name || '').toLowerCase() === seed.name.toLowerCase()
-      );
-      if (!exists) state.clients.push(seed);
-    });
   }
 
   const navButtons = document.querySelectorAll('nav button');
@@ -739,8 +752,7 @@
           <button class="btn btn-secondary" id="btn-exportar">Exportar backup (.json)</button>
           <button class="btn btn-secondary" id="btn-importar">Importar backup (.json)</button>
           <input type="file" id="input-importar" accept="application/json" style="display:none;">
-          <button class="btn btn-ghost" id="btn-sync">Sincronizar agora</button>
-          <span class="muted" id="sync-status"></span>
+          <span class="muted">Recomendado fazer backup semanal.</span>
         </div>
 
         <div class="cards-row mt-12">
@@ -785,15 +797,6 @@
       const file = e.target.files[0];
       if (file) importState(file);
       inputImportar.value = '';
-    };
-
-    const syncStatus = document.getElementById('sync-status');
-    document.getElementById('btn-sync').onclick = async () => {
-      syncStatus.textContent = 'Sincronizando...';
-      await saveStateToSupabase();
-      await loadStateFromSupabase();
-      syncStatus.textContent = 'OK ✅';
-      renderDashboard();
     };
 
     if (dashboardStatusChart) {
@@ -1133,6 +1136,7 @@
     const isEditing = editingOrderId !== null;
     const orderToEdit = isEditing ? state.orders.find(o => o.id === editingOrderId) : null;
 
+    // ---------- HELPERS DE FILTRO ----------
     function getPedidosFiltrados(){
       if (pedidosFiltroModo === 'todos') return state.orders.slice();
       if (pedidosFiltroModo === 'data') return state.orders.filter(o => o.date === pedidosFiltroData);
@@ -1145,6 +1149,7 @@
     const totalVendasNow = pedidosNow.reduce((s,o)=> s + (o.totalValue||0),0);
     const ticketMedioNow = totalPedidosNow ? totalVendasNow/totalPedidosNow : 0;
 
+    // ---------- UI ----------
     viewContainer.innerHTML = `
       <h2>Pedidos</h2>
 
@@ -1187,6 +1192,7 @@
       </div>
 
       <div class="grid-orders">
+        <!-- FORM -->
         <div class="card">
           <div class="section-title">
             <span>${isEditing ? 'Editar pedido' : 'Novo pedido'}</span>
@@ -1275,6 +1281,7 @@
           </form>
         </div>
 
+        <!-- LISTA -->
         <div class="card">
           <div class="section-title">
             <span id="titulo-lista-pedidos"></span>
@@ -1286,6 +1293,7 @@
       </div>
     `;
 
+    // ---------- ITENS ----------
     const form = document.getElementById('form-pedido');
     const selectProduto = document.getElementById('pedido-produto');
     const inputQtd = document.getElementById('pedido-quantidade');
@@ -1429,6 +1437,7 @@
 
     atualizarListaItens();
 
+    // ---------- SUBMIT ----------
     form.addEventListener('submit', (e) => {
       e.preventDefault();
 
@@ -1495,6 +1504,7 @@
       };
     }
 
+    // ---------- LISTA ----------
     const listaContainer = document.getElementById('lista-pedidos-container');
     const tituloLista = document.getElementById('titulo-lista-pedidos');
     const subtituloLista = document.getElementById('subtitulo-lista-pedidos');
@@ -1566,6 +1576,7 @@
       `;
     }
 
+    // delegação única (corrige editar)
     listaContainer.onclick = (e) => {
       const btn = e.target.closest('button');
       if (!btn) return;
@@ -1591,6 +1602,7 @@
       }
     };
 
+    // ---------- FILTROS ----------
     document.getElementById('filtro-hoje').onclick = () => {
       pedidosFiltroModo = 'hoje';
       pedidosFiltroData = today;
@@ -2122,23 +2134,10 @@
     });
   }
 
-  // ====== BOOT ======
-  loadStateLocal();
+  loadState();
   seedClientsIfMissing();
-  saveStateLocal();
-
-  // tenta puxar do Supabase (se estiver online)
-  (async () => {
-    const ok = await loadStateFromSupabase();
-    if (ok) {
-      renderView('dashboard');
-    } else {
-      renderView('dashboard');
-    }
-  })();
-
-  // sincroniza ao voltar internet
-  window.addEventListener('online', () => saveStateToSupabase());
+  saveState();
+  renderView('dashboard');
 </script>
 </body>
 </html>
