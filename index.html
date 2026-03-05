@@ -54,7 +54,16 @@
     .icon-btn:active{transform:translateY(1px)}
     .muted{color:var(--muted);font-size:12px}
 
-    #app{display:flex;min-height:calc(100vh - 70px)}
+    #app{
+  display:flex;
+  min-height: auto;      /* deixa o body controlar a rolagem */
+}
+
+main{
+  flex:1;
+  padding:18px 18px 40px;
+  overflow: visible;     /* remove o scroll interno do main */
+}
     nav{
       width:var(--nav-w);
       background:linear-gradient(180deg,var(--green-main),var(--green-dark));
