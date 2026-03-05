@@ -8,151 +8,330 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-  <!-- Supabase (UMD => window.supabase) -->
+  <!-- Supabase (UMD - window.supabase) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    :root {
-      --green-main: #567730;
-      --green-dark: #445823;
-      --green-soft: #6f8a49;
-      --orange-main: #f7941d;
-      --bg-light: #f7faf5;
-      --bg-paper: #ffffff;
-      --text-main: #222;
-      --muted: #718096;
-      --border: #e2e8f0;
+    :root{
+      --green-main:#567730;
+      --green-dark:#445823;
+      --green-soft:#6f8a49;
+      --orange-main:#f7941d;
+      --bg-light:#f7faf5;
+      --bg-paper:#ffffff;
+      --text-main:#222;
+      --muted:#718096;
+      --border:#e2e8f0;
+
+      /* altura do header desktop */
+      --header-h: 72px;
     }
 
-    * { box-sizing: border-box; }
+    *{ box-sizing:border-box; }
 
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      margin: 0;
-      background: var(--bg-light);
-      color: var(--text-main);
+    body{
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      margin:0;
+      background:var(--bg-light);
+      color:var(--text-main);
     }
 
-    /* ✅ HEADER AGORA NÃO É FIXO (sem sticky) */
-    header {
-      background: #ffffff;
-      color: var(--green-main);
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 3px solid var(--orange-main);
-      position: static;  /* <-- remove sticky */
-      z-index: auto;
-      gap: 12px;
+    header{
+      background:#fff;
+      color:var(--green-main);
+      padding:12px 24px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-bottom:3px solid var(--orange-main);
+      position:sticky;
+      top:0;
+      z-index:60;
+      height: var(--header-h);
     }
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
+    .header-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
     }
 
-    .header-left img.logo {
-      height: 44px;
-      width: auto;
-      object-fit: contain;
-      flex: 0 0 auto;
+    .header-left img.logo{
+      height:44px;
+      width:auto;
+      object-fit:contain;
+      flex:0 0 auto;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1.1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    header h1{
+      margin:0;
+      font-size:20px;
+      line-height:1.1;
     }
 
-    header small {
-      opacity: 0.85;
-      color: #666;
-      display: block;
-      font-size: 12px;
+    header small{
+      opacity:.85;
+      color:#666;
+      display:block;
+      font-size:12px;
     }
 
-    /* ====== MENU DRAWER (recolhível) ====== */
-    .hamburger {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: #fff;
-      border: 1px solid var(--border);
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--green-main);
-      padding: 6px 10px;
-      border-radius: 10px;
-      flex: 0 0 auto;
+    /* ===== Layout principal: Sidebar + Conteúdo ===== */
+    #app{
+      display:flex;
+      align-items:flex-start;
+      min-height: calc(100vh - var(--header-h));
     }
-    .hamburger:active { transform: translateY(1px); }
 
-    .nav-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.35);
-      backdrop-filter: blur(2px);
-      z-index: 50;
-    }
-    .nav-overlay.show { display: block; }
-
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      width: 320px;
-      max-width: 86vw;
-      transform: translateX(-110%);
-      transition: transform .22s ease;
-      z-index: 55;
-      padding-top: calc(env(safe-area-inset-top) + 64px);
-      box-shadow: 2px 0 14px rgba(0,0,0,.25);
+    /* ===== Sidebar DESKTOP (sticky acompanhando a tela) ===== */
+    nav{
+      width:240px;
       background: linear-gradient(180deg, var(--green-main), var(--green-dark));
-      color: #f0fff4;
+      color:#f0fff4;
+      padding:16px 0;
+
+      /* O QUE FAZ "ACOMPANHAR A TELA" */
+      position: sticky;
+      top: var(--header-h);
+      height: calc(100vh - var(--header-h));
       overflow-y: auto;
-    }
-    nav.open { transform: translateX(0); }
 
-    .nav-header {
-      display: flex;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 320px;
-      max-width: 86vw;
-      height: 56px;
+      /* evita “pular” */
+      flex: 0 0 auto;
+    }
+
+    nav h2{
+      font-size:12px;
+      margin:0 16px 12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color: rgba(255,255,255,.85);
+    }
+
+    nav button{
+      display:block;
+      width:100%;
+      padding:12px 18px;
+      border:none;
+      background:transparent;
+      color:#e6fffa;
+      text-align:left;
+      cursor:pointer;
+      font-size:14px;
+      border-left:4px solid transparent;
+    }
+
+    nav button:hover{ background: rgba(0,0,0,.15); }
+
+    nav button.active{
+      background: var(--orange-main);
+      color:#1a202c;
+      font-weight:700;
+      border-left-color:#fff;
+    }
+
+    main{
+      flex:1;
+      padding:20px 24px 40px;
+      overflow: visible;
+      min-width:0;
+    }
+
+    h2{ margin-top:0; margin-bottom:12px; color:var(--green-main); }
+
+    .card{
+      background:var(--bg-paper);
+      border-radius:10px;
+      padding:16px 18px;
+      box-shadow:0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom:16px;
+      border-top:3px solid rgba(86,119,48,0.12);
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap:12px 16px;
+      margin-bottom:12px;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap:16px;
+    }
+
+    label{
+      display:flex;
+      flex-direction:column;
+      font-size:13px;
+      color:#4a5568;
+    }
+
+    input[type="text"], input[type="number"], input[type="date"], select, textarea{
+      margin-top:4px;
+      padding:6px 8px;
+      font-size:14px;
+      border-radius:6px;
+      border:1px solid #cbd5e0;
+      outline:none;
+      background:#fdfdfd;
+    }
+
+    textarea{ min-height:40px; resize:vertical; }
+
+    input:focus, select:focus, textarea:focus{
+      border-color:var(--orange-main);
+      box-shadow:0 0 0 1px rgba(247,148,29,0.35);
+      background:#fff;
+    }
+
+    .btn{
+      display:inline-block;
+      padding:7px 14px;
+      font-size:14px;
+      border-radius:20px;
+      border:none;
+      cursor:pointer;
+      margin-right:8px;
+      margin-top:4px;
+      transition: transform .04s ease, opacity .1s ease;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; }
+
+    .btn-primary{ background:var(--orange-main); color:#fff; }
+    .btn-secondary{ background:var(--green-main); color:#fff; }
+    .btn-danger{ background:#e53e3e; color:#fff; }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+      margin-top:8px;
+    }
+    th, td{
+      border-bottom:1px solid var(--border);
+      padding:6px 8px;
+      text-align:left;
+      vertical-align:middle;
+    }
+    th{
+      background:#f7fafc;
+      font-weight:600;
+      color:#2d3748;
+    }
+    tbody tr:hover{ background:#f0fff4; }
+
+    .muted{ color:var(--muted); font-size:12px; }
+
+    .cards-row{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap:12px;
+      margin-top:8px;
+      margin-bottom:8px;
+    }
+
+    .stat-card{
+      background:#fefcf7;
+      border-radius:10px;
+      padding:10px 12px;
+      border:1px solid #f6e3c5;
+    }
+    .stat-card h4{ margin:0 0 6px 0; font-size:13px; color:#744210; }
+    .stat-card strong{ font-size:16px; }
+
+    .resumo-cards .stat-card{
+      background:#f7faf5;
+      border-color:var(--green-main);
+    }
+    .resumo-cards .stat-card h4{ color:var(--green-main); }
+    .resumo-cards .stat-card strong{ color:var(--orange-main); }
+
+    .totais-produto-card{
+      background:#f7faf5;
+      border-color:var(--green-main);
+      color:var(--green-main);
+      font-size:14px;
+    }
+    .totais-produto-card h4{
+      color:var(--green-main);
+      margin:0 0 6px 0;
+      padding-bottom:4px;
+      border-bottom:1px solid rgba(86,119,48,0.3);
+      font-size:16px;
+      font-weight:700;
+    }
+    .totais-produto-card .linha-sem-obs,
+    .totais-produto-card .linha-obs{
+      color:var(--green-main);
+      font-weight:500;
+      margin-top:4px;
+      font-size:14px;
+    }
+    .totais-produto-card .linha-obs{ margin-left:10px; }
+    .totais-produto-card .totais-total{
+      margin-top:8px;
+      font-weight:700;
+      color:var(--orange-main);
+      font-size:14px;
+    }
+
+    canvas{ max-width:100%; }
+
+    /* ===== MOBILE: menu recolhível ===== */
+    .hamburger{
+      display:none;
+      background:transparent;
+      border:none;
+      font-size:22px;
+      cursor:pointer;
+      color:var(--green-main);
+      padding:6px 8px;
+      border-radius:8px;
+      flex:0 0 auto;
+    }
+
+    .nav-overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.35);
+      backdrop-filter: blur(2px);
+      z-index:50;
+    }
+
+    .nav-header{
+      display:none;
+      position:fixed;
+      top:0; left:0; right:0;
+      height:56px;
       padding: env(safe-area-inset-top) 12px 0 12px;
-      align-items: center;
-      justify-content: space-between;
+      align-items:center;
+      justify-content:space-between;
       background: linear-gradient(0deg, var(--green-main), var(--green-soft));
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-      z-index: 56;
+      border-bottom:1px solid rgba(255,255,255,0.2);
+      z-index:56;
     }
 
-    .nav-header .brand {
+    .nav-header .brand{
       display:flex;
       align-items:center;
       gap:8px;
       color:#fff;
-      font-weight:800;
+      font-weight:700;
       font-size:15px;
-      min-width: 0;
     }
-    .nav-header img {
-      height: 26px;
+
+    .nav-header img{
+      height:26px;
       width:auto;
       object-fit:contain;
-      filter: drop-shadow(0 1px 0 rgba(0,0,0,.2));
     }
-    .nav-close {
+
+    .nav-close{
       background: rgba(255,255,255,.12);
       color:#fff;
       border:none;
@@ -162,194 +341,59 @@
       cursor:pointer;
     }
 
-    nav h2 {
-      font-size: 13px;
-      margin: 10px 16px 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: rgba(255,255,255,.85);
+    @media (max-width: 900px){
+      :root { --header-h: 64px; }
+
+      header{
+        padding:10px 12px;
+        gap:8px;
+        height: var(--header-h);
+      }
+      header h1{
+        font-size:16px;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+
+      #app{ display:block; } /* conteúdo em coluna */
+
+      .hamburger{ display:inline-flex; align-items:center; justify-content:center; }
+
+      nav{
+        position:fixed;
+        top:0;
+        left:0;
+        height:100vh;
+        width: 78vw;
+        max-width: 320px;
+        transform: translateX(-110%);
+        transition: transform .25s ease;
+        z-index:55;
+        padding-top: calc(env(safe-area-inset-top) + 64px);
+        box-shadow: 2px 0 14px rgba(0,0,0,.25);
+      }
+      nav.open{ transform: translateX(0); }
+
+      .nav-header{ display:flex; }
+
+      .nav-overlay.show{ display:block; }
+
+      main{ padding:12px 12px 40px; }
+
+      table{
+        display:block;
+        overflow-x:auto;
+        white-space:nowrap;
+        font-size:14px;
+      }
     }
 
-    nav button {
-      display: block;
-      width: 100%;
-      padding: 12px 18px;
-      border: none;
-      background: transparent;
-      color: #e6fffa;
-      text-align: left;
-      cursor: pointer;
-      font-size: 15px;
-      border-left: 4px solid transparent;
-    }
-    nav button:hover { background: rgba(0,0,0,0.15); }
-    nav button.active {
-      background: var(--orange-main);
-      color: #1a202c;
-      font-weight: 900;
-      border-left-color: #fff;
-    }
-
-    /* ====== APP (sem layout “preso”) ====== */
-    #app { display: block; }
-    main {
-      padding: 18px 16px 40px;
-      min-height: calc(100vh - 0px);
-    }
-
-    h2 { margin-top: 0; margin-bottom: 12px; color: var(--green-main); }
-
-    .card {
-      background: var(--bg-paper);
-      border-radius: 12px;
-      padding: 16px 18px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      margin-bottom: 16px;
-      border-top: 3px solid rgba(86,119,48,0.12);
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px 16px;
-      margin-bottom: 12px;
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-    }
-
-    label {
-      display: flex;
-      flex-direction: column;
-      font-size: 13px;
-      color: #4a5568;
-    }
-
-    input[type="text"],
-    input[type="number"],
-    input[type="date"],
-    select,
-    textarea {
-      margin-top: 4px;
-      padding: 10px 12px;
-      font-size: 15px;
-      border-radius: 10px;
-      border: 1px solid #cbd5e0;
-      outline: none;
-      background: #fdfdfd;
-    }
-
-    textarea { min-height: 60px; resize: vertical; }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--orange-main);
-      box-shadow: 0 0 0 2px rgba(247,148,29,0.25);
-      background: #fff;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 10px 16px;
-      font-size: 14px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      margin-right: 8px;
-      margin-top: 6px;
-      transition: transform .04s ease, opacity .1s ease;
-    }
-    .btn:active { transform: translateY(1px); }
-    .btn:disabled { opacity:.6; cursor:not-allowed; }
-
-    .btn-primary { background: var(--orange-main); color: #fff; }
-    .btn-secondary { background: var(--green-main); color: #fff; }
-    .btn-danger { background: #e53e3e; color: #fff; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      margin-top: 8px;
-      display: block;
-      overflow-x: auto;
-      white-space: nowrap;
-    }
-    th, td {
-      border-bottom: 1px solid var(--border);
-      padding: 10px 10px;
-      text-align: left;
-      vertical-align: middle;
-    }
-    th {
-      background: #f7fafc;
-      font-weight: 700;
-      color: #2d3748;
-    }
-    tbody tr:hover { background: #f0fff4; }
-
-    .muted { color: var(--muted); font-size: 12px; }
-
-    .cards-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-    }
-    .stat-card {
-      background: #fefcf7;
-      border-radius: 12px;
-      padding: 12px 14px;
-      border: 1px solid #f6e3c5;
-    }
-    .stat-card h4 { margin: 0 0 6px 0; font-size: 13px; color: #744210; }
-    .stat-card strong { font-size: 16px; }
-
-    .resumo-cards .stat-card {
-      background: #f7faf5;
-      border-color: rgba(86,119,48,0.35);
-    }
-    .resumo-cards .stat-card h4 { color: var(--green-main); }
-    .resumo-cards .stat-card strong { color: var(--orange-main); }
-
-    .totais-produto-card {
-      background: #f7faf5;
-      border-color: rgba(86,119,48,0.35);
-      color: var(--green-main);
-      font-size: 14px;
-    }
-    .totais-produto-card h4 {
-      color: var(--green-main);
-      margin: 0 0 6px 0;
-      padding-bottom: 6px;
-      border-bottom: 1px solid rgba(86,119,48,0.25);
-      font-size: 16px;
-      font-weight: 800;
-    }
-    .totais-produto-card .linha-sem-obs,
-    .totais-produto-card .linha-obs {
-      color: var(--green-main);
-      font-weight: 600;
-      margin-top: 6px;
-      font-size: 14px;
-    }
-    .totais-produto-card .linha-obs { margin-left: 10px; }
-    .totais-produto-card .totais-total {
-      margin-top: 10px;
-      font-weight: 900;
-      color: var(--orange-main);
-      font-size: 14px;
-    }
-
-    canvas { max-width: 100%; }
-
-    @media print {
-      header, nav, .btn, .no-print, .nav-overlay, .nav-header { display: none !important; }
-      body { background: #ffffff !important; }
-      main { padding: 0 !important; }
-      .card { box-shadow: none !important; border-radius: 0 !important; border: none !important; }
+    @media print{
+      header, nav, .btn, .no-print, .nav-overlay, .nav-header{ display:none !important; }
+      body{ background:#fff !important; }
+      main{ padding:0 !important; }
+      .card{ box-shadow:none !important; border-radius:0 !important; border:none !important; }
     }
   </style>
 </head>
@@ -358,14 +402,17 @@
 <header>
   <div class="header-left">
     <button class="hamburger" id="hamburger" aria-label="Abrir menu">☰</button>
+
     <img src="mealprepusa-logo.jpg" alt="Meal Prep USA" class="logo"
-         onerror="this.onerror=null; this.src='mealprepusa-logo.png';">
+         onerror="this.onerror=null; this.src='mealprepusa-logo.png';" />
+
     <div style="min-width:0;">
       <h1>Meal Prep USA – Sistema de Marmitas</h1>
-      <small>Online (Supabase) + Offline-friendly • Valores em USD</small>
+      <small>Online (Supabase) • Offline-friendly • Valores em USD</small>
     </div>
   </div>
-  <div class="muted">Versão 6.3 • header não fixo + drawer</div>
+
+  <div class="muted">Versão 6.2 • sidebar sticky + mobile drawer</div>
 </header>
 
 <div class="nav-overlay" id="navOverlay"></div>
@@ -373,8 +420,9 @@
 <nav id="sideNav" aria-label="Menu lateral">
   <div class="nav-header">
     <div class="brand">
-      <img src="mealprepusa-logo.jpg" alt="" onerror="this.onerror=null; this.src='mealprepusa-logo.png';">
-      <span style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Meal Prep USA</span>
+      <img src="mealprepusa-logo.jpg" alt=""
+           onerror="this.onerror=null; this.src='mealprepusa-logo.png';" />
+      Meal Prep USA
     </div>
     <button class="nav-close" id="navClose" aria-label="Fechar menu">✕</button>
   </div>
@@ -394,22 +442,19 @@
 </div>
 
 <script>
-  /***********************
-   *  CONFIG SUPABASE
-   ***********************/
+  // ====== CONFIG SUPABASE ======
+  // use o seu projeto e sua anon key:
   const SUPABASE_URL = "https://dbmzcqusygysoljrduvp.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRibXpjcXVzeWd5c29sanJkdXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5OTkzNzYsImV4cCI6MjA3OTU3NTM3Nn0.i2h1PvxlGRuNNfl6fj_scL630AR3kTW4Gd26L0Z-rfg";
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  /***********************
-   *  STATE LOCAL
-   ***********************/
-  const STORAGE_KEY = "mealprepusa_state_v6_3";
+  const STORAGE_KEY = "mealprepusa_state_v6_2";
   let state = { clients: [], products: [], orders: [] };
 
+  let supabase = null;
+
   let editingClientId = null;
-  let editingOrderId = null;
   let editingProductId = null;
+  let editingOrderId = null;
 
   let dashboardStatusChart = null;
   let dashboardProductsChart = null;
@@ -417,8 +462,7 @@
 
   const SEED_CLIENTS = [
     { name: "CELESTE", phone: "", address: "3720 Albemarle St NW, DC", district: "DC", notes: "Pedido Celeste" },
-    { name: "RODRIGO", phone: "", address: "1600 N Oak St, Arlington, VA", district: "Arlington", notes: "Pedido Rodrigo" },
-    { name: "CARLA", phone: "", address: "513 Goodland Place, Rockville", district: "Rockville", notes: "Sem limão, sem azeite, apenas sal. Legumes: abobrinha, cenoura, batata doce, batata, berinjela, repolho roxo, repolho verde." }
+    { name: "RODRIGO", phone: "", address: "1600 N Oak St, Arlington, VA", district: "Arlington", notes: "Pedido Rodrigo" }
   ];
 
   function ensureSeedClients() {
@@ -444,76 +488,50 @@
     }
   }
 
-  function generateId() { return Date.now().toString() + Math.floor(Math.random() * 1000).toString(); }
+  function generateId() {
+    return Date.now().toString() + Math.floor(Math.random() * 1000).toString();
+  }
+
   function formatCurrency(value) {
     const n = Number(value) || 0;
     return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
   }
-  function getTodayISO() { const d = new Date(); return d.toISOString().slice(0, 10); }
-  function addDaysISO(dateISO, days) { const d = new Date(dateISO); d.setDate(d.getDate()+days); return d.toISOString().slice(0, 10); }
+
+  function getTodayISO() {
+    const d = new Date();
+    return d.toISOString().slice(0, 10);
+  }
+
+  function addDaysISO(dateISO, days) {
+    const d = new Date(dateISO);
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  }
 
   function findClientById(id) { return state.clients.find(c => c.id === id); }
   function findProductById(id) { return state.products.find(p => p.id === id); }
   function productLabel(p) { if (!p) return "Produto"; return p.name + (p.mealType ? " – " + p.mealType : ""); }
 
-  /***********************
-   *  MENU DRAWER
-   ***********************/
-  const sideNav = document.getElementById("sideNav");
-  const hamburger = document.getElementById("hamburger");
-  const navOverlay = document.getElementById("navOverlay");
-  const navClose = document.getElementById("navClose");
-
-  function openNav(){ sideNav.classList.add("open"); navOverlay.classList.add("show"); }
-  function closeNav(){ sideNav.classList.remove("open"); navOverlay.classList.remove("show"); }
-
-  hamburger.addEventListener("click", () => {
-    sideNav.classList.contains("open") ? closeNav() : openNav();
-  });
-  navOverlay.addEventListener("click", closeNav);
-  navClose.addEventListener("click", closeNav);
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeNav(); });
-
-  const navButtons = document.querySelectorAll("nav button[data-view]");
-  const viewContainer = document.getElementById("view-container");
-
-  navButtons.forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      navButtons.forEach(b=>b.classList.remove("active"));
-      btn.classList.add("active");
-      const view = btn.getAttribute("data-view");
-      if(view==="clientes") editingClientId=null;
-      if(view==="cardapio") editingProductId=null;
-      if(view==="pedidos") editingOrderId=null;
-      renderView(view);
-      closeNav(); // ✅ fecha ao clicar em uma opção
-      window.scrollTo({top:0, behavior:"smooth"});
-    });
-  });
-
-  function renderView(view){
-    switch(view){
-      case "dashboard": renderDashboard(); break;
-      case "clientes": renderClientes(); break;
-      case "cardapio": renderCardapio(); break;
-      case "pedidos": renderPedidos(); break;
-      case "producao": renderProducao(); break;
-      case "entregas": renderEntregas(); break;
-      case "financeiro": renderFinanceiro(); break;
-      default: renderDashboard();
+  async function initSupabase() {
+    try {
+      if (!window.supabase) throw new Error("Supabase lib não carregou.");
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) {
+      console.warn("Supabase não inicializou:", e);
+      supabase = null;
     }
   }
 
-  /***********************
-   *  SUPABASE SYNC
-   ***********************/
   async function syncFromSupabase() {
+    if (!supabase) return;
+
     try {
       const [clientsRes, productsRes, ordersRes] = await Promise.all([
-        sb.from("clients").select("*"),
-        sb.from("products").select("*"),
-        sb.from("orders").select("*")
+        supabase.from("clients").select("*"),
+        supabase.from("products").select("*"),
+        supabase.from("orders").select("*")
       ]);
+
       if (clientsRes.error) throw clientsRes.error;
       if (productsRes.error) throw productsRes.error;
       if (ordersRes.error) throw ordersRes.error;
@@ -533,18 +551,22 @@
     }
   }
 
+  // Upsert (salva alterações)
   let pushTimer = null;
-  function schedulePushToSupabase(){
+  function schedulePushToSupabase() {
+    if (!supabase) return;
     clearTimeout(pushTimer);
-    pushTimer = setTimeout(pushAllToSupabase, 600);
+    pushTimer = setTimeout(pushAllToSupabase, 800);
   }
 
-  async function pushAllToSupabase(){
+  async function pushAllToSupabase() {
+    if (!supabase) return;
+
     try {
-      const [cRes,pRes,oRes] = await Promise.all([
-        sb.from("clients").upsert(state.clients, { onConflict: "id" }),
-        sb.from("products").upsert(state.products, { onConflict: "id" }),
-        sb.from("orders").upsert(
+      const [cRes, pRes, oRes] = await Promise.all([
+        supabase.from("clients").upsert(state.clients, { onConflict: "id" }),
+        supabase.from("products").upsert(state.products, { onConflict: "id" }),
+        supabase.from("orders").upsert(
           state.orders.map(o => ({
             id: o.id,
             date: o.date,
@@ -560,26 +582,81 @@
           { onConflict: "id" }
         )
       ]);
+
       if (cRes.error) throw cRes.error;
       if (pRes.error) throw pRes.error;
       if (oRes.error) throw oRes.error;
     } catch (e) {
       console.warn("Falha ao enviar para Supabase:", e.message || e);
+      if (!window.__syncWarned) {
+        window.__syncWarned = true;
+        alert("Não consegui sincronizar com o Supabase agora. Vou manter local (offline) e tentar nos próximos saves.");
+      }
     }
   }
 
-  /***********************
-   *  DASHBOARD
-   ***********************/
+  // DELETE remoto (remove da base também)
+  async function deleteFromSupabase(table, id) {
+    if (!supabase) return;
+    const { error } = await supabase.from(table).delete().eq("id", id);
+    if (error) throw error;
+  }
+
+  // ===== NAV: mobile drawer + fecha ao clicar =====
+  const sideNav = document.getElementById("sideNav");
+  const hamburger = document.getElementById("hamburger");
+  const navOverlay = document.getElementById("navOverlay");
+  const navClose = document.getElementById("navClose");
+
+  function openNav(){ sideNav.classList.add("open"); navOverlay.classList.add("show"); }
+  function closeNav(){ sideNav.classList.remove("open"); navOverlay.classList.remove("show"); }
+  hamburger.addEventListener("click", () => sideNav.classList.contains("open") ? closeNav() : openNav());
+  navOverlay.addEventListener("click", closeNav);
+  navClose.addEventListener("click", closeNav);
+
+  const navButtons = document.querySelectorAll("nav button");
+  const viewContainer = document.getElementById("view-container");
+
+  navButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      navButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const view = btn.getAttribute("data-view");
+      if (view === "clientes") editingClientId = null;
+      if (view === "cardapio") editingProductId = null;
+      if (view === "pedidos") editingOrderId = null;
+
+      renderView(view);
+
+      // No mobile, fecha automaticamente quando escolhe a opção
+      if (window.matchMedia("(max-width: 900px)").matches) closeNav();
+    });
+  });
+
+  function renderView(view){
+    switch(view){
+      case "dashboard": renderDashboard(); break;
+      case "clientes": renderClientes(); break;
+      case "cardapio": renderCardapio(); break;
+      case "pedidos": renderPedidos(); break;
+      case "producao": renderProducao(); break;
+      case "entregas": renderEntregas(); break;
+      case "financeiro": renderFinanceiro(); break;
+      default: renderDashboard();
+    }
+  }
+
+  // ===== DASHBOARD =====
   function renderDashboard() {
     const today = getTodayISO();
-    const ordersToday = state.orders.filter(o=>o.date===today);
-    const marmitasHoje = ordersToday.reduce((s,o)=>s+(o.items||[]).reduce((ac,it)=>ac+(it.quantity||0),0),0);
-    const totalToday = ordersToday.reduce((s,o)=>s+(o.totalValue||0),0);
-    const ticketMedioHoje = ordersToday.length ? totalToday/ordersToday.length : 0;
+    const ordersToday = state.orders.filter(o => o.date === today);
+    const marmitasHoje = ordersToday.reduce((s,o)=> s + (o.items||[]).reduce((ac,it)=> ac + (it.quantity||0), 0), 0);
+    const totalToday = ordersToday.reduce((s,o)=> s + (o.totalValue||0), 0);
+    const ticketMedioHoje = ordersToday.length ? (totalToday / ordersToday.length) : 0;
 
-    const sevenDaysAgo = addDaysISO(today,-6);
-    const ordersLast7 = state.orders.filter(o=>o.date>=sevenDaysAgo && o.date<=today);
+    const sevenDaysAgo = addDaysISO(today, -6);
+    const ordersLast7 = state.orders.filter(o => o.date >= sevenDaysAgo && o.date <= today);
 
     viewContainer.innerHTML = `
       <h2>Dashboard</h2>
@@ -608,43 +685,40 @@
     `;
 
     if (dashboardStatusChart) { dashboardStatusChart.destroy(); dashboardStatusChart=null; }
-    if (ordersToday.length>0) {
-      const ctxStatus = document.getElementById("chart-status").getContext("2d");
+    if (ordersToday.length>0 && typeof Chart!=="undefined") {
+      const ctx = document.getElementById("chart-status").getContext("2d");
       const labels = ["A produzir","Produzido","Entregue","Cancelado"];
-      const data = labels.map(st => ordersToday.filter(o=>o.status===st).length);
-      dashboardStatusChart = new Chart(ctxStatus, {
-        type: "pie",
-        data: { labels, datasets: [{ data }] },
-        options: { plugins: { legend: { position: "bottom" } } }
+      const counts = labels.map(st => ordersToday.filter(o => o.status === st).length);
+      dashboardStatusChart = new Chart(ctx, {
+        type:"pie",
+        data:{ labels, datasets:[{ data: counts }] },
+        options:{ plugins:{ legend:{ position:"bottom" } } }
       });
     }
 
     if (dashboardProductsChart) { dashboardProductsChart.destroy(); dashboardProductsChart=null; }
-    if (ordersLast7.length>0) {
-      const produtoMap = {};
+    if (ordersLast7.length>0 && typeof Chart!=="undefined") {
+      const map = {};
       ordersLast7.forEach(o=>{
         (o.items||[]).forEach(it=>{
           const p = findProductById(it.productId);
           const nome = p ? p.name : "Produto";
-          produtoMap[nome] = (produtoMap[nome]||0) + (it.quantity||0);
+          map[nome] = (map[nome]||0) + (it.quantity||0);
         });
       });
-      const entries = Object.entries(produtoMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
-      const labels = entries.map(e=>e[0]);
-      const data = entries.map(e=>e[1]);
-
-      const ctxProd = document.getElementById("chart-produtos").getContext("2d");
-      dashboardProductsChart = new Chart(ctxProd, {
-        type: "bar",
-        data: { labels, datasets: [{ data }] },
-        options: { plugins: { legend: { display:false } }, scales:{ y:{ beginAtZero:true } } }
+      const top = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      const labels = top.map(e=>e[0]);
+      const data = top.map(e=>e[1]);
+      const ctx = document.getElementById("chart-produtos").getContext("2d");
+      dashboardProductsChart = new Chart(ctx, {
+        type:"bar",
+        data:{ labels, datasets:[{ data }] },
+        options:{ plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
       });
     }
   }
 
-  /***********************
-   *  CLIENTES
-   ***********************/
+  // ===== CLIENTES =====
   function renderClientes() {
     const isEditing = editingClientId !== null;
     const clientToEdit = isEditing ? state.clients.find(c=>c.id===editingClientId) : null;
@@ -657,44 +731,45 @@
         <form id="form-cliente">
           <div class="form-grid">
             <label>Nome
-              <input type="text" name="name" required value="${clientToEdit?clientToEdit.name:""}">
+              <input type="text" name="name" required value="${clientToEdit ? (clientToEdit.name||"") : ""}">
             </label>
             <label>Telefone / WhatsApp
-              <input type="text" name="phone" value="${clientToEdit?(clientToEdit.phone||""):""}">
+              <input type="text" name="phone" value="${clientToEdit ? (clientToEdit.phone||"") : ""}">
             </label>
             <label>Endereço
-              <input type="text" name="address" value="${clientToEdit?(clientToEdit.address||""):""}">
+              <input type="text" name="address" value="${clientToEdit ? (clientToEdit.address||"") : ""}">
             </label>
             <label>Bairro / Cidade
-              <input type="text" name="district" value="${clientToEdit?(clientToEdit.district||""):""}">
+              <input type="text" name="district" value="${clientToEdit ? (clientToEdit.district||"") : ""}">
             </label>
           </div>
-
           <label>Observações (cliente)
-            <textarea name="notes">${clientToEdit?(clientToEdit.notes||""):""}</textarea>
+            <textarea name="notes">${clientToEdit ? (clientToEdit.notes||"") : ""}</textarea>
           </label>
 
           <button type="submit" class="btn btn-primary">${isEditing ? "Atualizar cliente" : "Salvar cliente"}</button>
-          ${isEditing ? `<button type="button" id="btn-cancelar-edicao-cliente" class="btn btn-secondary">Cancelar edição</button>` : ""}
+          ${isEditing ? '<button type="button" id="btn-cancelar-edicao-cliente" class="btn btn-secondary">Cancelar edição</button>' : ""}
         </form>
       </div>
 
       <div class="card">
         <h3>Lista de clientes</h3>
-        ${state.clients.length===0 ? `<p class="muted">Nenhum cliente cadastrado ainda.</p>` : `
+        ${state.clients.length===0 ? '<p class="muted">Nenhum cliente cadastrado ainda.</p>' : `
           <table>
-            <thead><tr><th>Nome</th><th>Telefone</th><th>Bairro/Cidade</th><th>Endereço</th><th>Obs.</th><th>Ações</th></tr></thead>
+            <thead>
+              <tr><th>Nome</th><th>Telefone</th><th>Bairro/Cidade</th><th>Endereço</th><th>Obs.</th><th>Ações</th></tr>
+            </thead>
             <tbody id="clientes-tbody">
               ${state.clients.map(c=>`
                 <tr data-id="${c.id}">
-                  <td>${c.name}</td>
+                  <td>${c.name||""}</td>
                   <td>${c.phone||""}</td>
                   <td>${c.district||""}</td>
                   <td>${c.address||""}</td>
                   <td>${c.notes||""}</td>
                   <td>
-                    <button class="btn btn-secondary" type="button" data-action="edit">Editar</button>
-                    <button class="btn btn-danger" type="button" data-action="delete">Excluir</button>
+                    <button class="btn btn-secondary btn-editar" type="button">Editar</button>
+                    <button class="btn btn-danger btn-excluir" type="button">Excluir</button>
                   </td>
                 </tr>
               `).join("")}
@@ -728,7 +803,6 @@
       saveStateLocal();
       schedulePushToSupabase();
       renderClientes();
-      window.scrollTo({top:0, behavior:"smooth"});
     });
 
     const cancelBtn = document.getElementById("btn-cancelar-edicao-cliente");
@@ -736,37 +810,36 @@
 
     const tbody = document.getElementById("clientes-tbody");
     if (tbody) {
-      tbody.addEventListener("click", (e)=>{
-        const btn = e.target.closest("button");
-        if (!btn) return;
-        const tr = btn.closest("tr");
+      tbody.addEventListener("click", async (e)=>{
+        const tr = e.target.closest("tr");
+        if (!tr) return;
         const id = tr.getAttribute("data-id");
-        const action = btn.getAttribute("data-action");
 
-        if (action === "edit") {
+        if (e.target.classList.contains("btn-editar")) {
           editingClientId = id;
           renderClientes();
-          window.scrollTo({top:0, behavior:"smooth"});
+          window.scrollTo({ top:0, behavior:"smooth" });
           return;
         }
 
-        if (action === "delete") {
-          const hasOrders = state.orders.some(o=>o.clientId===id);
-          if (hasOrders) return alert("Este cliente tem pedidos. Exclua/ajuste os pedidos antes.");
-
+        if (e.target.classList.contains("btn-excluir")) {
           if (!confirm("Excluir este cliente?")) return;
+
+          // remove local
           state.clients = state.clients.filter(c=>c.id!==id);
           saveStateLocal();
-          schedulePushToSupabase();
+
+          // remove remoto
+          try { await deleteFromSupabase("clients", id); }
+          catch(err){ console.warn("Falha delete clients:", err?.message||err); }
+
           renderClientes();
         }
       });
     }
   }
 
-  /***********************
-   *  CARDÁPIO (PRODUTOS)
-   ***********************/
+  // ===== CARDÁPIO =====
   function renderCardapio() {
     const isEditing = editingProductId !== null;
     const productToEdit = isEditing ? state.products.find(p=>p.id===editingProductId) : null;
@@ -775,55 +848,55 @@
       <h2>Cardápio</h2>
 
       <div class="card">
-        <h3>${isEditing ? "Editar produto" : "Novo produto"}</h3>
+        <h3>${isEditing ? "Editar item" : "Novo produto"}</h3>
         <form id="form-produto">
           <div class="form-grid">
             <label>Nome do prato (sabor)
-              <input type="text" name="name" required value="${productToEdit?productToEdit.name:""}">
+              <input type="text" name="name" required value="${productToEdit ? (productToEdit.name||"") : ""}">
             </label>
             <label>Tipo de marmita
               <select name="mealType">
-                <option value="" ${!productToEdit||!productToEdit.mealType ? "selected" : ""}>Selecione...</option>
+                <option value="" ${(!productToEdit || !productToEdit.mealType) ? "selected" : ""}>Selecione...</option>
                 ${["Comfort Food","Fit","Low Carb","Vegetarian","Vegan","Keto","Outro"].map(t=>`
                   <option value="${t}" ${(productToEdit && productToEdit.mealType===t) ? "selected" : ""}>${t}</option>
                 `).join("")}
               </select>
             </label>
             <label>Vegetais (opcional)
-              <input type="text" name="category" value="${productToEdit?(productToEdit.category||""):""}">
+              <input type="text" name="category" value="${productToEdit ? (productToEdit.category||"") : ""}">
             </label>
             <label>Preço (USD)
-              <input type="number" name="price" min="0" step="0.01" required value="${productToEdit?Number(productToEdit.price||0):""}">
+              <input type="number" name="price" min="0" step="0.01" required value="${productToEdit ? (productToEdit.price ?? "") : ""}">
             </label>
             <label>Ativo na semana?
               <select name="active">
-                <option value="true" ${(productToEdit && productToEdit.active===false) ? "" : "selected"}>Sim</option>
+                <option value="true" ${((productToEdit && productToEdit.active===true) || !productToEdit) ? "selected" : ""}>Sim</option>
                 <option value="false" ${(productToEdit && productToEdit.active===false) ? "selected" : ""}>Não</option>
               </select>
             </label>
           </div>
 
           <button type="submit" class="btn btn-primary">${isEditing ? "Atualizar produto" : "Salvar produto"}</button>
-          ${isEditing ? `<button type="button" id="btn-cancelar-edicao-produto" class="btn btn-secondary">Cancelar edição</button>` : ""}
+          ${isEditing ? '<button type="button" id="btn-cancelar-edicao-produto" class="btn btn-secondary">Cancelar edição</button>' : ""}
         </form>
       </div>
 
       <div class="card">
         <h3>Produtos cadastrados</h3>
-        ${state.products.length===0 ? `<p class="muted">Nenhum produto cadastrado.</p>` : `
+        ${state.products.length===0 ? '<p class="muted">Nenhum produto cadastrado.</p>' : `
           <table>
             <thead><tr><th>Nome</th><th>Tipo</th><th>Vegetais</th><th>Preço</th><th>Ativo</th><th>Ações</th></tr></thead>
             <tbody id="produtos-tbody">
               ${state.products.map(p=>`
                 <tr data-id="${p.id}">
-                  <td>${p.name}</td>
+                  <td>${p.name||""}</td>
                   <td>${p.mealType||"-"}</td>
                   <td>${p.category||""}</td>
                   <td>${formatCurrency(p.price)}</td>
                   <td>${p.active ? "Sim" : "Não"}</td>
                   <td>
-                    <button class="btn btn-secondary" type="button" data-action="edit">Editar</button>
-                    <button class="btn btn-danger" type="button" data-action="delete">Excluir</button>
+                    <button class="btn btn-secondary btn-editar" type="button">Editar</button>
+                    <button class="btn btn-danger btn-excluir" type="button">Excluir</button>
                   </td>
                 </tr>
               `).join("")}
@@ -842,7 +915,7 @@
         mealType: data.get("mealType") || "",
         category: (data.get("category")||"").trim(),
         price: Number(data.get("price")) || 0,
-        active: data.get("active")==="true"
+        active: (data.get("active") === "true")
       };
       if (!payload.name) return alert("Nome é obrigatório.");
 
@@ -857,7 +930,6 @@
       saveStateLocal();
       schedulePushToSupabase();
       renderCardapio();
-      window.scrollTo({top:0, behavior:"smooth"});
     });
 
     const cancelBtn = document.getElementById("btn-cancelar-edicao-produto");
@@ -865,51 +937,557 @@
 
     const tbody = document.getElementById("produtos-tbody");
     if (tbody) {
-      tbody.addEventListener("click", (e)=>{
-        const btn = e.target.closest("button");
-        if (!btn) return;
-        const tr = btn.closest("tr");
+      tbody.addEventListener("click", async (e)=>{
+        const tr = e.target.closest("tr");
+        if (!tr) return;
         const id = tr.getAttribute("data-id");
-        const action = btn.getAttribute("data-action");
 
-        if (action==="edit") {
+        if (e.target.classList.contains("btn-editar")) {
           editingProductId = id;
           renderCardapio();
-          window.scrollTo({top:0, behavior:"smooth"});
+          window.scrollTo({ top:0, behavior:"smooth" });
           return;
         }
 
-        if (action==="delete") {
-          const used = state.orders.some(o => (o.items||[]).some(it=>it.productId===id));
-          if (used) return alert("Este produto já foi usado em pedidos. Remova/ajuste os pedidos antes.");
-
+        if (e.target.classList.contains("btn-excluir")) {
           if (!confirm("Excluir este produto?")) return;
+
           state.products = state.products.filter(p=>p.id!==id);
           saveStateLocal();
-          schedulePushToSupabase();
+
+          try { await deleteFromSupabase("products", id); }
+          catch(err){ console.warn("Falha delete products:", err?.message||err); }
+
           renderCardapio();
         }
       });
     }
   }
 
-  /***********************
-   *  PEDIDOS / PRODUÇÃO / ENTREGAS / FINANCEIRO
-   *  (mantive seus módulos principais; se você quiser, eu compactos aqui também)
-   ***********************/
-  function renderPedidos(){ viewContainer.innerHTML = `<h2>Pedidos</h2><div class="card"><p class="muted">Seu módulo de pedidos já está funcionando. Se quiser, eu colo ele completo aqui também.</p></div>`; }
-  function renderProducao(){ viewContainer.innerHTML = `<h2>Produção do dia</h2><div class="card"><p class="muted">Seu módulo de produção já está funcionando. Se quiser, eu colo ele completo aqui também.</p></div>`; }
-  function renderEntregas(){ viewContainer.innerHTML = `<h2>Entregas do dia</h2><div class="card"><p class="muted">Seu módulo de entregas já está funcionando. Se quiser, eu colo ele completo aqui também.</p></div>`; }
-  function renderFinanceiro(){ viewContainer.innerHTML = `<h2>Financeiro</h2><div class="card"><p class="muted">Seu módulo financeiro já está funcionando. Se quiser, eu colo ele completo aqui também.</p></div>`; }
+  // ===== PEDIDOS =====
+  function renderPedidos() {
+    const today = getTodayISO();
+    const isEditing = editingOrderId !== null;
+    const orderToEdit = isEditing ? state.orders.find(o=>o.id===editingOrderId) : null;
 
-  /***********************
-   *  BOOT
-   ***********************/
+    viewContainer.innerHTML = `
+      <h2>Pedidos</h2>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>${isEditing ? "Editar pedido" : "Novo pedido"}</h3>
+
+          <form id="form-pedido">
+            <div class="form-grid">
+              <label>Data
+                <input type="date" name="date" value="${orderToEdit ? orderToEdit.date : today}" required>
+              </label>
+
+              <label>Cliente
+                <select name="clientId" required>
+                  <option value="">Selecione...</option>
+                  ${state.clients.map(c=>`
+                    <option value="${c.id}" ${(orderToEdit && orderToEdit.clientId===c.id) ? "selected" : ""}>${c.name}</option>
+                  `).join("")}
+                </select>
+              </label>
+
+              <label>Forma de pagamento
+                <select name="paymentMethod" required>
+                  <option value="">Selecione...</option>
+                  ${["Zelle","Venmo","Dinheiro"].map(m=>`
+                    <option value="${m}" ${(orderToEdit && orderToEdit.paymentMethod===m) ? "selected" : ""}>${m}</option>
+                  `).join("")}
+                </select>
+              </label>
+
+              <label>Frete (USD)
+                <input type="number" name="freight" min="0" step="0.01" value="${orderToEdit ? (orderToEdit.freight||0) : 0}">
+              </label>
+
+              <label>Desconto (USD)
+                <input type="number" name="discount" min="0" step="0.01" value="${orderToEdit ? (orderToEdit.discount||0) : 0}">
+              </label>
+            </div>
+
+            <hr style="margin-top:12px;">
+
+            <h4>Itens do pedido</h4>
+            <div class="form-grid">
+              <label>Produto (somente ativos)
+                <select id="pedido-produto">
+                  <option value="">Selecione...</option>
+                  ${state.products.filter(p=>p.active).map(p=>`
+                    <option value="${p.id}">${productLabel(p)} - ${formatCurrency(p.price)}</option>
+                  `).join("")}
+                </select>
+              </label>
+
+              <label>Quantidade
+                <input type="number" id="pedido-quantidade" min="1" value="1">
+              </label>
+
+              <label>Obs. deste item (opcional)
+                <input type="text" id="pedido-item-nota" placeholder="Ex: sem feijão, sem arroz">
+              </label>
+            </div>
+
+            <button type="button" class="btn btn-secondary" id="btn-add-item">Adicionar item</button>
+
+            <div id="lista-itens" style="margin-top:12px;"></div>
+
+            <div style="margin-top:12px;">
+              <div><strong>Subtotal: </strong><span id="subtotal-pedido-label">${formatCurrency(0)}</span></div>
+              <div style="margin-top:8px;"><strong>Total do pedido: </strong><span id="total-pedido-label">${formatCurrency(0)}</span></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top:8px;">
+              ${isEditing ? "Atualizar pedido" : "Salvar pedido"}
+            </button>
+
+            ${isEditing ? '<button type="button" id="btn-cancelar-edicao-pedido" class="btn btn-secondary">Cancelar edição</button>' : ""}
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Lista de pedidos</h3>
+          <div id="lista-pedidos"></div>
+        </div>
+      </div>
+    `;
+
+    const form = document.getElementById("form-pedido");
+    const selectProduto = document.getElementById("pedido-produto");
+    const inputQtd = document.getElementById("pedido-quantidade");
+    const inputItemNota = document.getElementById("pedido-item-nota");
+    const btnAddItem = document.getElementById("btn-add-item");
+    const divListaItens = document.getElementById("lista-itens");
+    const subtotalLabel = document.getElementById("subtotal-pedido-label");
+    const totalLabel = document.getElementById("total-pedido-label");
+    const btnCancelar = document.getElementById("btn-cancelar-edicao-pedido");
+
+    let itensTemp = (orderToEdit && orderToEdit.items) ? JSON.parse(JSON.stringify(orderToEdit.items)) : [];
+
+    function computeTotals() {
+      const subtotal = itensTemp.reduce((s,it)=> s + (it.lineTotal||0), 0);
+      const freight = Number(form.freight.value)||0;
+      const discount = Number(form.discount.value)||0;
+      const total = subtotal + freight - discount;
+
+      subtotalLabel.textContent = formatCurrency(subtotal);
+      totalLabel.textContent = formatCurrency(total);
+
+      return { subtotal, total, freight, discount };
+    }
+
+    function renderItens() {
+      if (itensTemp.length === 0) {
+        divListaItens.innerHTML = '<p class="muted">Nenhum item adicionado ainda.</p>';
+        computeTotals();
+        return;
+      }
+
+      divListaItens.innerHTML = `
+        <table>
+          <thead>
+            <tr><th>Produto</th><th>Preço</th><th>Qtd</th><th>Obs</th><th>Total</th><th></th></tr>
+          </thead>
+          <tbody>
+            ${itensTemp.map((it, idx)=>{
+              const prod = findProductById(it.productId);
+              return `
+                <tr data-idx="${idx}">
+                  <td>${productLabel(prod)}</td>
+                  <td>${formatCurrency(it.unitPrice)}</td>
+                  <td><input type="number" min="1" class="item-qty" data-idx="${idx}" value="${it.quantity}"></td>
+                  <td>${it.itemNote || "-"}</td>
+                  <td>${formatCurrency(it.lineTotal)}</td>
+                  <td><button type="button" class="btn btn-danger btn-remover">Remover</button></td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      `;
+
+      computeTotals();
+
+      const tbody = divListaItens.querySelector("tbody");
+      tbody.onclick = (e)=>{
+        if (e.target.classList.contains("btn-remover")) {
+          const tr = e.target.closest("tr");
+          const idx = Number(tr.getAttribute("data-idx"));
+          itensTemp.splice(idx,1);
+          renderItens();
+        }
+      };
+
+      tbody.onchange = (e)=>{
+        if (e.target.classList.contains("item-qty")) {
+          const idx = Number(e.target.getAttribute("data-idx"));
+          const q = Math.max(1, Number(e.target.value)||1);
+          itensTemp[idx].quantity = q;
+          itensTemp[idx].lineTotal = q * itensTemp[idx].unitPrice;
+          renderItens();
+        }
+      };
+    }
+
+    btnAddItem.onclick = ()=>{
+      const pid = selectProduto.value;
+      if (!pid) return alert("Selecione um produto ativo.");
+      const prod = findProductById(pid);
+      if (!prod) return alert("Produto inválido.");
+
+      const qtd = Number(inputQtd.value) || 1;
+      if (qtd <= 0) return alert("Quantidade inválida.");
+
+      const note = (inputItemNota.value||"").trim();
+      const unitPrice = Number(prod.price) || 0;
+
+      const existing = itensTemp.find(it => it.productId===pid && (it.itemNote||"")===(note||""));
+      if (existing) {
+        existing.quantity += qtd;
+        existing.lineTotal = existing.quantity * existing.unitPrice;
+      } else {
+        itensTemp.push({ productId: pid, quantity: qtd, unitPrice, lineTotal: unitPrice*qtd, itemNote: note });
+      }
+
+      inputQtd.value = 1;
+      inputItemNota.value = "";
+      renderItens();
+    };
+
+    form.freight.addEventListener("input", computeTotals);
+    form.discount.addEventListener("input", computeTotals);
+
+    renderItens();
+
+    form.onsubmit = (e)=>{
+      e.preventDefault();
+
+      if (state.clients.length === 0 || state.products.length === 0) return alert("Cadastre cliente e produto antes.");
+      if (itensTemp.length === 0) return alert("Adicione itens ao pedido.");
+
+      const data = new FormData(form);
+      const date = data.get("date");
+      const clientId = data.get("clientId");
+      const paymentMethod = data.get("paymentMethod");
+
+      if (!paymentMethod) return alert("Selecione a forma de pagamento.");
+
+      const { subtotal, total, freight, discount } = computeTotals();
+
+      const payload = {
+        date, clientId,
+        items: itensTemp.slice(),
+        status: orderToEdit?.status || "A produzir",
+        paymentMethod,
+        freight, discount,
+        subtotalValue: subtotal,
+        totalValue: total
+      };
+
+      if (editingOrderId) {
+        const idx = state.orders.findIndex(o=>o.id===editingOrderId);
+        if (idx !== -1) state.orders[idx] = { ...state.orders[idx], ...payload };
+        editingOrderId = null;
+      } else {
+        state.orders.push({ id: generateId(), ...payload });
+      }
+
+      saveStateLocal();
+      schedulePushToSupabase();
+      renderPedidos();
+      window.scrollTo({ top:0, behavior:"smooth" });
+    };
+
+    if (btnCancelar) {
+      btnCancelar.onclick = ()=>{ editingOrderId=null; renderPedidos(); };
+    }
+
+    renderOrdersList();
+  }
+
+  function renderOrdersList(){
+    const listDiv = document.getElementById("lista-pedidos");
+    const pedidos = state.orders.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+
+    if (!pedidos.length) {
+      listDiv.innerHTML = `<p class="muted">Nenhum pedido cadastrado.</p>`;
+      return;
+    }
+
+    listDiv.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th><th>Cliente</th><th>Itens</th><th>Total</th><th>Pagamento</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pedidos.map(o=>{
+            const c = findClientById(o.clientId);
+            const resumo = (o.items||[]).map(it=>{
+              const p = findProductById(it.productId);
+              const obs = it.itemNote ? ` (${it.itemNote})` : "";
+              return `${it.quantity}x ${productLabel(p)}${obs}`;
+            }).join("<br>");
+            return `
+              <tr data-id="${o.id}">
+                <td>${o.date||""}</td>
+                <td>${c?c.name:"-"}</td>
+                <td>${resumo||"-"}</td>
+                <td><strong>${formatCurrency(o.totalValue||0)}</strong></td>
+                <td>${o.paymentMethod||""}</td>
+                <td>
+                  <button class="btn btn-secondary" type="button" data-action="edit">Editar</button>
+                  <button class="btn btn-danger" type="button" data-action="delete">Excluir</button>
+                </td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    `;
+
+    const tbody = listDiv.querySelector("tbody");
+    tbody.onclick = async (e)=>{
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      const tr = btn.closest("tr");
+      const id = tr.getAttribute("data-id");
+      const action = btn.getAttribute("data-action");
+
+      if (action === "edit") {
+        editingOrderId = id;
+        renderPedidos();
+        window.scrollTo({ top:0, behavior:"smooth" });
+        return;
+      }
+
+      if (action === "delete") {
+        if (!confirm("Excluir este pedido?")) return;
+
+        state.orders = state.orders.filter(o=>o.id!==id);
+        saveStateLocal();
+
+        try { await deleteFromSupabase("orders", id); }
+        catch(err){ console.warn("Falha delete orders:", err?.message||err); }
+
+        renderOrdersList();
+      }
+    };
+  }
+
+  // ===== PRODUÇÃO =====
+  function renderProducao(){
+    const today = getTodayISO();
+    viewContainer.innerHTML = `
+      <h2>Produção do dia</h2>
+      <div class="card">
+        <div class="form-grid">
+          <label>Data
+            <input type="date" id="producao-data" value="${today}">
+          </label>
+        </div>
+        <button class="btn btn-primary" id="btn-atualizar-producao">Atualizar</button>
+        <button class="btn btn-secondary" id="btn-pdf-producao">Imprimir</button>
+        <div id="producao-resultado" style="margin-top:12px;"></div>
+      </div>
+    `;
+
+    const inputData = document.getElementById("producao-data");
+    const btnAtualizar = document.getElementById("btn-atualizar-producao");
+    const btnPdf = document.getElementById("btn-pdf-producao");
+    const div = document.getElementById("producao-resultado");
+
+    function calc(){
+      const dataSel = inputData.value;
+      const pedidosDia = state.orders.filter(o=>o.date===dataSel && o.status!=="Cancelado");
+      if (!pedidosDia.length) { div.innerHTML = `<p class="muted">Nenhum pedido para esta data.</p>`; return; }
+
+      const tot = {};
+      let totalGeral = 0;
+
+      pedidosDia.forEach(o=>{
+        (o.items||[]).forEach(it=>{
+          const p = findProductById(it.productId);
+          const nome = p ? p.name : "Produto";
+          tot[nome] = (tot[nome]||0) + (it.quantity||0);
+          totalGeral += (it.quantity||0);
+        });
+      });
+
+      const rows = Object.entries(tot).sort((a,b)=>a[0].localeCompare(b[0]))
+        .map(([nome,q])=>`<tr><td>${nome}</td><td><strong>${q}</strong></td></tr>`).join("");
+
+      div.innerHTML = `
+        <h3>Resumo – ${dataSel}</h3>
+        <div class="cards-row resumo-cards">
+          <div class="stat-card"><h4>Total marmitas</h4><strong>${totalGeral}</strong></div>
+          <div class="stat-card"><h4>Pedidos</h4><strong>${pedidosDia.length}</strong></div>
+        </div>
+        <table>
+          <thead><tr><th>Produto</th><th>Total</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    btnAtualizar.onclick = calc;
+    btnPdf.onclick = ()=>window.print();
+    calc();
+  }
+
+  // ===== ENTREGAS =====
+  function renderEntregas(){
+    const today = getTodayISO();
+    viewContainer.innerHTML = `
+      <h2>Entregas do dia</h2>
+      <div class="card">
+        <div class="form-grid">
+          <label>Data
+            <input type="date" id="entregas-data" value="${today}">
+          </label>
+        </div>
+        <button class="btn btn-primary" id="btn-atualizar-entregas">Atualizar</button>
+        <div id="entregas-resultado" style="margin-top:12px;"></div>
+      </div>
+    `;
+
+    const inputData = document.getElementById("entregas-data");
+    const btn = document.getElementById("btn-atualizar-entregas");
+    const div = document.getElementById("entregas-resultado");
+
+    function calc(){
+      const d = inputData.value;
+      const pedidos = state.orders.filter(o=>o.date===d && o.status!=="Cancelado");
+      if (!pedidos.length) { div.innerHTML = `<p class="muted">Nenhuma entrega para esta data.</p>`; return; }
+
+      const rows = pedidos.map(o=>{
+        const c = findClientById(o.clientId);
+        const itens = (o.items||[]).map(it=>{
+          const p = findProductById(it.productId);
+          const obs = it.itemNote ? ` (${it.itemNote})` : "";
+          return `${it.quantity}x ${productLabel(p)}${obs}`;
+        }).join("<br>");
+        return `
+          <tr>
+            <td>${c?c.name:"-"}</td>
+            <td>${c?.address||""}</td>
+            <td>${c?.district||""}</td>
+            <td>${c?.phone||""}</td>
+            <td>${itens||"-"}</td>
+            <td>${o.status||""}</td>
+          </tr>
+        `;
+      }).join("");
+
+      div.innerHTML = `
+        <h3>Entregas – ${d}</h3>
+        <table>
+          <thead><tr><th>Cliente</th><th>Endereço</th><th>Bairro</th><th>Telefone</th><th>Itens</th><th>Status</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    btn.onclick = calc;
+    calc();
+  }
+
+  // ===== FINANCEIRO =====
+  function renderFinanceiro(){
+    const today = getTodayISO();
+    viewContainer.innerHTML = `
+      <h2>Financeiro</h2>
+      <div class="card">
+        <div class="form-grid">
+          <label>Data inicial
+            <input type="date" id="fin-data-inicio">
+          </label>
+          <label>Data final
+            <input type="date" id="fin-data-fim">
+          </label>
+        </div>
+        <div>
+          <button class="btn btn-primary" id="btn-atualizar-financeiro">Calcular</button>
+          <button class="btn btn-secondary" id="btn-fin-hoje">Hoje (${today})</button>
+          <button class="btn btn-secondary" id="btn-fin-7">Últimos 7 dias</button>
+          <button class="btn btn-secondary" id="btn-fin-30">Últimos 30 dias</button>
+        </div>
+        <div id="financeiro-resultado" style="margin-top:12px;"></div>
+      </div>
+    `;
+
+    const ini = document.getElementById("fin-data-inicio");
+    const fim = document.getElementById("fin-data-fim");
+    const btnCalc = document.getElementById("btn-atualizar-financeiro");
+    const btnHoje = document.getElementById("btn-fin-hoje");
+    const btn7 = document.getElementById("btn-fin-7");
+    const btn30 = document.getElementById("btn-fin-30");
+    const div = document.getElementById("financeiro-resultado");
+
+    function filtrar(){
+      const a = ini.value;
+      const b = fim.value;
+      return state.orders.filter(o=>{
+        if (a && o.date < a) return false;
+        if (b && o.date > b) return false;
+        return true;
+      });
+    }
+
+    function calc(){
+      const pedidos = filtrar();
+      if (financeLineChart) { financeLineChart.destroy(); financeLineChart=null; }
+
+      if (!pedidos.length) { div.innerHTML = `<p class="muted">Nenhum pedido neste período.</p>`; return; }
+
+      const total = pedidos.reduce((s,o)=>s+(o.totalValue||0),0);
+      const ticket = pedidos.length ? total/pedidos.length : 0;
+
+      const porDia = {};
+      pedidos.forEach(o=>{ porDia[o.date]=(porDia[o.date]||0)+(o.totalValue||0); });
+      const datas = Object.keys(porDia).sort();
+      const valores = datas.map(d=>porDia[d]);
+
+      div.innerHTML = `
+        <div class="cards-row">
+          <div class="stat-card"><h4>Total vendido</h4><strong>${formatCurrency(total)}</strong></div>
+          <div class="stat-card"><h4>Pedidos</h4><strong>${pedidos.length}</strong></div>
+          <div class="stat-card"><h4>Ticket médio</h4><strong>${formatCurrency(ticket)}</strong></div>
+        </div>
+        <div style="margin-top:12px;">
+          <h4>Evolução diária</h4>
+          <canvas id="chart-finance"></canvas>
+        </div>
+      `;
+
+      const ctx = document.getElementById("chart-finance").getContext("2d");
+      financeLineChart = new Chart(ctx, {
+        type:"line",
+        data:{ labels: datas, datasets:[{ data: valores }] },
+        options:{ plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
+      });
+    }
+
+    btnCalc.onclick = calc;
+    btnHoje.onclick = ()=>{ ini.value=today; fim.value=today; calc(); };
+    btn7.onclick = ()=>{ ini.value=addDaysISO(today,-6); fim.value=today; calc(); };
+    btn30.onclick = ()=>{ ini.value=addDaysISO(today,-29); fim.value=today; calc(); };
+  }
+
+  // ===== BOOT =====
   (async function boot(){
     loadStateLocal();
     ensureSeedClients();
     saveStateLocal();
+
+    await initSupabase();
     await syncFromSupabase();
+
     renderView("dashboard");
   })();
 </script>
