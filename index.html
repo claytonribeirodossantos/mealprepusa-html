@@ -86,6 +86,9 @@ gap:10px;
 
 #app{
 display:flex;
+flex-direction:row;
+align-items:stretch;
+width:100%;
 min-height:calc(100vh - 64px);
 }
 
@@ -94,15 +97,15 @@ min-height:calc(100vh - 64px);
 nav{
 
 width:var(--nav-w);
+min-width:var(--nav-w);
+flex-shrink:0;
 
 background:linear-gradient(180deg,var(--green-main),var(--green-dark));
-
 color:white;
 
 padding-top:12px;
 
 display:flex;
-
 flex-direction:column;
 
 transition:width .25s;
@@ -184,6 +187,7 @@ justify-content:center;
 
 main{
 flex:1;
+width:100%;
 padding:22px;
 overflow-y:auto;
 }
@@ -400,3 +404,42 @@ Online (Supabase) • Valores em USD
 <main id="view-container"></main>
 
 </div>
+
+<script>
+
+const nav = document.getElementById("sideNav");
+const btnToggle = document.getElementById("btnToggleNav");
+const hamburger = document.getElementById("hamburger");
+
+if(btnToggle){
+btnToggle.onclick = () => {
+nav.classList.toggle("collapsed");
+};
+}
+
+if(hamburger){
+hamburger.onclick = () => {
+nav.classList.toggle("open");
+};
+}
+
+</script>
+
+</body>
+</html>
+Estrutura final correta
+
+Seu arquivo precisa terminar assim:
+
+</nav>
+
+<main id="view-container"></main>
+
+</div>
+
+<script>
+...javascript...
+</script>
+
+</body>
+</html>
