@@ -191,11 +191,25 @@
     }
 
     /* ====== APP (sem layout “preso”) ====== */
-    #app { display: block; }
-    main {
-      padding: 18px 16px 40px;
-      min-height: calc(100vh - 0px);
-    }
+    #app{
+  display:flex;
+  min-height:100vh;
+}
+
+nav{
+  position:relative;
+  transform:none !important;
+  height:auto;
+  width:260px;
+  min-width:260px;
+  box-shadow:none;
+}
+
+main{
+  flex:1;
+  padding:30px;
+  background:#f7faf5;
+}
 
     h2 { margin-top: 0; margin-bottom: 12px; color: var(--green-main); }
 
