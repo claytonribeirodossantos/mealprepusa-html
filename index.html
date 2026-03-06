@@ -776,19 +776,27 @@
 
     const tbody = document.getElementById("clientes-tbody");
     if (tbody) {
-      tbody.addEventListener("click", (e) => {
+      tbody.addEventListener("click", async (e) => {
         const tr = e.target.closest("tr");
         if (!tr) return;
         const id = tr.getAttribute("data-id");
 
         if (e.target.classList.contains("btn-excluir-cliente")) {
-          if (confirm("Excluir este cliente?")) {
-            state.clients = state.clients.filter(c => c.id !== id);
-            saveStateLocal();
-            schedulePushToSupabase();
-            renderClientes();
-          }
-        }
+  if (confirm("Excluir este cliente?")) {
+
+    if (sb) {
+      await sb
+        .from("clients")
+        .delete()
+        .eq("id", id);
+    }
+
+    state.clients = state.clients.filter(c => c.id !== id);
+
+    saveStateLocal();
+    renderClientes();
+  }
+}
 
         if (e.target.classList.contains("btn-editar-cliente")) {
           editingClientId = id;
