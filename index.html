@@ -71,9 +71,9 @@
     }
 
     #app {
-      display: flex;
-      min-height: calc(100vh - 70px);
-    }
+  display: flex;
+  flex-direction: row;
+}
 
     nav {
   width: 230px;
@@ -309,9 +309,13 @@
 
     @media (max-width: 900px) {
 
-  #app { 
-    flex-direction: row;
-    min-height: calc(100vh - 70px);
+  nav {
+    position: relative;
+    height: auto;
+    width: 230px;
+    transform: none;
+    max-width: none;
+    box-shadow: none;
   }
 
       header {
